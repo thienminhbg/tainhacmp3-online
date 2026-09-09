@@ -2,7 +2,7 @@ import json, os, re, shutil, subprocess, threading, uuid
 from pathlib import Path
 from urllib.parse import parse_qs, urlparse
 
-from fastapi import FastAPI, HTTPException, Request
+from fastapi import FastAPI, HTTPException, Request, UploadFile, File, Form
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
@@ -10,6 +10,8 @@ from pydantic import BaseModel
 BASE = Path(__file__).resolve().parent.parent
 DOWNLOADS = BASE / 'downloads'
 DOWNLOADS.mkdir(exist_ok=True)
+UPLOADS = BASE / 'uploads'
+UPLOADS.mkdir(exist_ok=True)
 WEB_ORIGINS = {
     os.getenv('WEB_ORIGIN', 'https://tainhacmp3.online'),
     'https://tainhacmp3.online',
@@ -17,12 +19,14 @@ WEB_ORIGINS = {
 }
 MAX_SOURCE_SECONDS = 4 * 60 * 60
 MAX_CLIP_SECONDS = 30 * 60
+MAX_UPLOAD_BYTES = 500 * 1024 * 1024
 INFO_TIMEOUT = 45
 CUT_TIMEOUT = 900
+UPLOAD_TIMEOUT = 900
 jobs = {}
 
-# Use the YouTube client that was verified to work on the VPS with Deno/EJS.
 YOUTUBE_EXTRACTOR_ARGS = 'youtube:player_client=web_embedded'
+ALLOWED_UPLOAD_EXTS = {'.mp4', '.mkv', '.webm', '.mov', '.m4v', '.avi', '.mpeg', '.mpg'}
 
 app = FastAPI(title='TaiNhacMP3 YouTube Cutter')
 app.add_middleware(
@@ -120,17 +124,41 @@ def fmt_time(seconds: float) -> str:
     return f'{h:02d}:{m:02d}:{s:02d}' if h else f'{m:02d}:{s:02d}'
 
 
+def ffprobe_duration(path: Path) -> float:
+    r = subprocess.run(
+        ['ffprobe', '-v', 'error', '-show_entries', 'format=duration',
+         '-of', 'default=noprint_wrappers=1:nokey=1', str(path)],
+        text=True, capture_output=True, timeout=60,
+    )
+    if r.returncode:
+        raise RuntimeError((r.stderr or 'Unable to read video duration')[-1000:])
+    try:
+        duration = float(r.stdout.strip())
+    except ValueError:
+        raise RuntimeError('Could not determine video duration')
+    if duration <= 0:
+        raise RuntimeError('Could not determine video duration')
+    if duration > MAX_SOURCE_SECONDS:
+        raise RuntimeError('This video is longer than the server limit of 4 hours')
+    return duration
+
+
+def validate_clip(start: float, end: float, duration: float):
+    if start < 0 or end <= start:
+        raise RuntimeError('End time must be greater than start time')
+    if end - start > MAX_CLIP_SECONDS:
+        raise RuntimeError('A clip can be at most 30 minutes long')
+    if end > duration:
+        raise RuntimeError('End time is longer than the video duration')
+
+
 def worker(jid: str, url: str, start: float, end: float, output_format: str, title: str):
     d = DOWNLOADS / jid
     d.mkdir(exist_ok=True)
     jobs[jid]['status'] = 'processing'
     try:
         duration = end - start
-        if start < 0 or end <= start:
-            raise RuntimeError('End time must be greater than start time')
-        if duration > MAX_CLIP_SECONDS:
-            raise RuntimeError('A clip can be at most 30 minutes long')
-
+        validate_clip(start, end, start + duration)
         if output_format == 'mp3':
             template = str(d / 'clip.%(ext)s')
             args = [
@@ -145,11 +173,9 @@ def worker(jid: str, url: str, start: float, end: float, output_format: str, tit
                 '-f', 'bv*+ba/b', '--merge-output-format', 'mp4',
                 '-o', template, url,
             ]
-
         r = run_yt_dlp(args, CUT_TIMEOUT)
         if r.returncode:
             raise RuntimeError((r.stderr or r.stdout or 'Cut failed')[-3000:])
-
         ext = '.mp3' if output_format == 'mp3' else '.mp4'
         candidates = [p for p in d.glob('*') if p.is_file() and p.suffix.lower() == ext]
         if not candidates:
@@ -158,15 +184,44 @@ def worker(jid: str, url: str, start: float, end: float, output_format: str, tit
         final_name = safe_name(f'{title} [{fmt_time(start)}-{fmt_time(end)}]') + ext
         target = d / final_name
         source.rename(target)
-        jobs[jid].update(
-            status='done',
-            filename=target.name,
-            title=title,
-            format=output_format,
-            download_url=f'/api/file/{jid}/{target.name}',
-        )
+        jobs[jid].update(status='done', filename=target.name, title=title,
+                          format=output_format, download_url=f'/api/file/{jid}/{target.name}')
     except Exception as e:
         jobs[jid].update(status='error', error=str(e))
+
+
+def upload_worker(jid: str, source: Path, start: float, end: float, output_format: str, title: str):
+    d = DOWNLOADS / jid
+    d.mkdir(exist_ok=True)
+    jobs[jid]['status'] = 'processing'
+    try:
+        duration = ffprobe_duration(source)
+        validate_clip(start, end, duration)
+        out = d / ('clip.mp3' if output_format == 'mp3' else 'clip.mp4')
+        clip_duration = end - start
+        if output_format == 'mp3':
+            cmd = ['ffmpeg', '-y', '-ss', str(start), '-i', str(source), '-t', str(clip_duration),
+                   '-vn', '-c:a', 'libmp3lame', '-b:a', '192k', str(out)]
+        else:
+            cmd = ['ffmpeg', '-y', '-ss', str(start), '-i', str(source), '-t', str(clip_duration),
+                   '-c:v', 'libx264', '-preset', 'veryfast', '-c:a', 'aac', '-movflags', '+faststart', str(out)]
+        r = subprocess.run(cmd, cwd=BASE, text=True, capture_output=True, timeout=UPLOAD_TIMEOUT)
+        if r.returncode:
+            raise RuntimeError((r.stderr or r.stdout or 'FFmpeg failed')[-3000:])
+        if not out.exists() or out.stat().st_size == 0:
+            raise RuntimeError('No output file was produced')
+        final_name = safe_name(f'{title} [{fmt_time(start)}-{fmt_time(end)}]') + out.suffix
+        target = d / final_name
+        out.rename(target)
+        jobs[jid].update(status='done', filename=target.name, title=title,
+                          format=output_format, download_url=f'/api/file/{jid}/{target.name}')
+    except Exception as e:
+        jobs[jid].update(status='error', error=str(e))
+    finally:
+        try:
+            source.unlink(missing_ok=True)
+        except Exception:
+            pass
 
 
 @app.get('/health')
@@ -199,31 +254,100 @@ def create_cut(req: Request, body: CutReq):
         raise HTTPException(400, 'End time must be greater than start time')
     if body.end - body.start > MAX_CLIP_SECONDS:
         raise HTTPException(400, 'A clip can be at most 30 minutes long')
-
     try:
         metadata = get_info(url)
     except subprocess.TimeoutExpired:
         raise HTTPException(504, 'YouTube information request timed out')
     except Exception as e:
         raise HTTPException(400, str(e))
-
     if body.end > metadata['duration']:
         raise HTTPException(400, 'End time is longer than the video duration')
-
     jid = uuid.uuid4().hex
-    jobs[jid] = {
-        'status': 'queued',
-        'title': metadata['title'],
-        'format': output_format,
-        'start': body.start,
-        'end': body.end,
-    }
-    threading.Thread(
-        target=worker,
-        args=(jid, url, body.start, body.end, output_format, metadata['title']),
-        daemon=True,
-    ).start()
+    jobs[jid] = {'status': 'queued', 'title': metadata['title'], 'format': output_format,
+                 'start': body.start, 'end': body.end}
+    threading.Thread(target=worker, args=(jid, url, body.start, body.end, output_format, metadata['title']), daemon=True).start()
     return {'job_id': jid, 'status': 'queued'}
+
+
+@app.post('/api/upload-info')
+async def upload_info(req: Request, file: UploadFile = File(...)):
+    if req.headers.get('origin') not in (None, *WEB_ORIGINS):
+        raise HTTPException(403, 'Origin not allowed')
+    ext = Path(file.filename or '').suffix.lower()
+    if ext not in ALLOWED_UPLOAD_EXTS:
+        raise HTTPException(400, 'Unsupported video format. Use MP4, MKV, WebM, MOV, M4V, AVI, MPEG or MPG.')
+    tmp = UPLOADS / f'{uuid.uuid4().hex}{ext}'
+    size = 0
+    try:
+        with tmp.open('wb') as f:
+            while True:
+                chunk = await file.read(1024 * 1024)
+                if not chunk:
+                    break
+                size += len(chunk)
+                if size > MAX_UPLOAD_BYTES:
+                    raise HTTPException(413, 'Uploaded file is larger than the 500 MB limit.')
+                f.write(chunk)
+        duration = ffprobe_duration(tmp)
+        return {'filename': file.filename, 'duration': duration}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(400, str(e))
+    finally:
+        try:
+            tmp.unlink(missing_ok=True)
+        except Exception:
+            pass
+
+
+@app.post('/api/upload-cut')
+async def upload_cut(req: Request, file: UploadFile = File(...), start: float = Form(0), end: float = Form(...), format: str = Form('mp4')):
+    if req.headers.get('origin') not in (None, *WEB_ORIGINS):
+        raise HTTPException(403, 'Origin not allowed')
+    output_format = format.lower().strip()
+    if output_format not in {'mp4', 'mp3'}:
+        raise HTTPException(400, 'Format must be mp4 or mp3')
+    ext = Path(file.filename or '').suffix.lower()
+    if ext not in ALLOWED_UPLOAD_EXTS:
+        raise HTTPException(400, 'Unsupported video format.')
+    jid = uuid.uuid4().hex
+    source = UPLOADS / f'{jid}{ext}'
+    size = 0
+    try:
+        with source.open('wb') as f:
+            while True:
+                chunk = await file.read(1024 * 1024)
+                if not chunk:
+                    break
+                size += len(chunk)
+                if size > MAX_UPLOAD_BYTES:
+                    raise HTTPException(413, 'Uploaded file is larger than the 500 MB limit.')
+                f.write(chunk)
+        duration = ffprobe_duration(source)
+        try:
+            validate_clip(float(start), float(end), duration)
+        except ValueError:
+            raise HTTPException(400, 'Invalid start or end time')
+        except RuntimeError as e:
+            raise HTTPException(400, str(e))
+        title = Path(file.filename or 'uploaded-video').stem
+        jobs[jid] = {'status': 'queued', 'title': title, 'format': output_format,
+                     'start': float(start), 'end': float(end)}
+        threading.Thread(target=upload_worker, args=(jid, source, float(start), float(end), output_format, title), daemon=True).start()
+        return {'job_id': jid, 'status': 'queued'}
+    except HTTPException:
+        try:
+            source.unlink(missing_ok=True)
+        except Exception:
+            pass
+        raise
+    except subprocess.TimeoutExpired:
+        source.unlink(missing_ok=True)
+        raise HTTPException(504, 'Video inspection timed out')
+    except Exception as e:
+        source.unlink(missing_ok=True)
+        raise HTTPException(400, str(e))
 
 
 @app.get('/api/status/{jid}')
