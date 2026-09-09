@@ -21,6 +21,9 @@ INFO_TIMEOUT = 45
 CUT_TIMEOUT = 900
 jobs = {}
 
+# Use the YouTube client that was verified to work on the VPS with Deno/EJS.
+YOUTUBE_EXTRACTOR_ARGS = 'youtube:player_client=web_embedded'
+
 app = FastAPI(title='TaiNhacMP3 YouTube Cutter')
 app.add_middleware(
     CORSMiddleware,
@@ -73,7 +76,7 @@ def run_yt_dlp(args, timeout):
     if not Path(exe).exists() and not shutil.which('yt-dlp'):
         raise RuntimeError('yt-dlp is not installed. Run: python -m pip install -U yt-dlp')
     return subprocess.run(
-        [exe, '--no-playlist', '--no-warnings', *args],
+        [exe, '--no-playlist', '--no-warnings', '--extractor-args', YOUTUBE_EXTRACTOR_ARGS, *args],
         cwd=BASE,
         text=True,
         capture_output=True,
