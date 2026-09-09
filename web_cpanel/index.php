@@ -1,5 +1,69 @@
 <?php
 $country = strtoupper($_SERVER['HTTP_CF_IPCOUNTRY'] ?? '');
-$map=['VN'=>'vi','US'=>'en','GB'=>'en','CA'=>'en','AU'=>'en','FR'=>'fr','DE'=>'de','ES'=>'es','ID'=>'id','TH'=>'th','JP'=>'ja','KR'=>'ko','BR'=>'pt','IT'=>'it'];
-$lang=$map[$country]??'en';
-?><!doctype html><html lang="<?=htmlspecialchars($lang)?>"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>TaiNhacMP3 — YouTube Video Cutter</title><meta name="description" content="TaiNhacMP3 — cut a selected part of a public YouTube video and export it as MP4 or MP3."><meta name="robots" content="index,follow"><link rel="canonical" href="https://tainhacmp3.online/"><link rel="stylesheet" href="assets/style.css"></head><body><header><div class="wrap nav"><a class="brand" href="/"><b>S</b> TaiNhacMP3</a><nav><a href="#how">How it works</a><a href="#about">About</a><select id="language"><option value="vi">🇻🇳 Tiếng Việt</option><option value="en">🇺🇸 English</option><option value="fr">🇫🇷 Français</option><option value="de">🇩🇪 Deutsch</option><option value="es">🇪🇸 Español</option><option value="id">🇮🇩 Indonesia</option><option value="th">🇹🇭 ไทย</option><option value="ja">🇯🇵 日本語</option><option value="ko">🇰🇷 한국어</option><option value="pt">🇧🇷 Português</option><option value="it">🇮🇹 Italiano</option></select></nav></div></header><main><section class="hero"><div class="wrap"><div class="eyebrow">YOUTUBE VIDEO CUTTER</div><h1>Cut YouTube videos<br><em>fast & simple.</em></h1><p id="lead">Paste a public YouTube link, choose the exact start and end time, then create your clip.</p><form id="form"><div class="search"><span>↗</span><input id="url" type="url" autocomplete="url" placeholder="Paste YouTube URL here..." required><button type="submit">Get Video</button></div></form><div id="status" class="status"></div><section id="editor" class="editor hidden"><div class="preview"><div id="thumbWrap" class="thumb"><img id="thumb" alt="YouTube thumbnail"><div class="play">▶</div></div><iframe id="player" class="hidden" title="YouTube preview" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe></div><div class="video-info"><h2 id="title"></h2><p id="channel"></p><p id="durationText"></p></div><div class="timeline"><div class="bar"><span id="range"></span></div><div class="time-row"><label>Start<input id="start" value="00:00"></label><label>End<input id="end" value="00:00"></label><span id="selection"></span></div></div><div class="format-row"><div><b>Output format</b><small>Choose MP4 video or MP3 audio</small></div><div class="formats"><button type="button" class="format active" data-format="mp4">MP4</button><button type="button" class="format" data-format="mp3">MP3</button></div></div><button id="cut" class="cut" type="button">Cut Video</button></section><div id="result" class="result hidden"><div class="success">✓</div><div class="info"><small>READY</small><h2 id="resultTitle">Your clip is ready</h2><p id="meta"></p></div><a id="download" class="btn" href="#" target="_blank" rel="noopener">Download</a></div></div></section><section id="how" class="section"><div class="wrap"><div class="eyebrow">HOW IT WORKS</div><h2>Three simple steps.</h2><div class="steps"><div><strong>01</strong><h3>Paste</h3><p>Paste a public YouTube video URL.</p></div><div><strong>02</strong><h3>Select</h3><p>Set the start and end time of your clip.</p></div><div><strong>03</strong><h3>Cut</h3><p>FFmpeg processes the selected section on the VPS.</p></div></div></div></section><section id="about" class="section"><div class="wrap about"><div><div class="eyebrow">ABOUT TAINHACMP3</div><h2>A simple YouTube clipping tool.</h2></div><p>TaiNhacMP3 lets you create short MP4 or MP3 clips from public YouTube videos that you are authorized to download or reuse. The server handles the media processing so the browser stays lightweight.</p></div></section></main><footer><div class="wrap">© 2026 TaiNhacMP3 · Use only content you are authorized to download or reuse.</div></footer><script>window.DEFAULT_LANG="<?=htmlspecialchars($lang)?>";</script><script src="assets/app.js"></script></body></html>
+$map = ['VN'=>'vi','US'=>'en','GB'=>'en','CA'=>'en','AU'=>'en','FR'=>'fr','DE'=>'de','ES'=>'es','ID'=>'id','TH'=>'th','JP'=>'ja','KR'=>'ko','BR'=>'pt','IT'=>'it'];
+$lang = $map[$country] ?? 'en';
+?>
+<!doctype html>
+<html lang="<?= htmlspecialchars($lang) ?>">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#0b0b0d">
+  <title>TaiNhacMP3 – YouTube Video Cutter by Link | Minh Dev</title>
+  <meta name="description" content="Cut public YouTube videos by link. Paste a YouTube URL, choose start and end time, and create MP4 or MP3 clips online with TaiNhacMP3 by Minh Dev.">
+  <meta name="robots" content="index,follow,max-image-preview:large">
+  <meta name="author" content="Minh Dev">
+  <meta name="keywords" content="cắt video YouTube, trình cắt video YouTube, cắt video bằng link, cắt YouTube online, YouTube video cutter, YouTube clip cutter, MP4, MP3, TaiNhacMP3, Minh Dev">
+  <link rel="canonical" href="https://tainhacmp3.online/">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://tainhacmp3.online/">
+  <meta property="og:site_name" content="TaiNhacMP3">
+  <meta property="og:title" content="TaiNhacMP3 – YouTube Video Cutter by Link">
+  <meta property="og:description" content="Cut public YouTube videos by link and create MP4 or MP3 clips online.">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="TaiNhacMP3 – YouTube Video Cutter by Link">
+  <meta name="twitter:description" content="Cut public YouTube videos by link and create MP4 or MP3 clips online.">
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"TaiNhacMP3","url":"https://tainhacmp3.online/","applicationCategory":"MultimediaApplication","operatingSystem":"Web","description":"YouTube video cutter by link for public content.","author":{"@type":"Person","name":"Minh Dev"},"offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}</script>
+  <link rel="stylesheet" href="assets/style.css?v=4">
+</head>
+<body>
+<header class="topbar">
+  <div class="container nav">
+    <a class="brand" href="/"><span class="brand-mark">T</span><span>TaiNhacMP3</span></a>
+    <nav>
+      <a href="#how" data-i18n="navHow">How it works</a>
+      <a href="#faq" data-i18n="navFaq">FAQ</a>
+      <select id="language" aria-label="Language">
+        <option value="vi">🇻🇳 Tiếng Việt</option><option value="en">🇺🇸 English</option><option value="fr">🇫🇷 Français</option><option value="de">🇩🇪 Deutsch</option><option value="es">🇪🇸 Español</option><option value="id">🇮🇩 Indonesia</option><option value="th">🇹🇭 ไทย</option><option value="ja">🇯🇵 日本語</option><option value="ko">🇰🇷 한국어</option><option value="pt">🇧🇷 Português</option><option value="it">🇮🇹 Italiano</option>
+      </select>
+    </nav>
+  </div>
+</header>
+<main>
+<section class="hero"><div class="container hero-inner">
+  <div class="badge"><span></span><span data-i18n="badge">YOUTUBE VIDEO CUTTER</span></div>
+  <h1><span data-i18n="hero1">Cut YouTube videos</span><br><em data-i18n="hero2">by link.</em></h1>
+  <p class="lead" id="lead">Paste a public YouTube link, choose the exact start and end, then create your clip.</p>
+  <form id="infoForm" class="url-form"><div class="url-box"><span class="link-icon">↗</span><input id="url" type="url" autocomplete="off" placeholder="Paste YouTube URL here..." required><button type="submit" id="getBtn">Get video</button></div></form>
+  <div id="message" class="message" role="status"></div>
+  <section id="editor" class="editor hidden">
+    <div class="video-card"><div class="preview"><img id="thumbnail" alt="Video thumbnail"><div class="preview-shade"></div><div class="play-badge">▶</div></div><div class="video-meta"><div><span class="eyebrow" data-i18n="videoFound">VIDEO FOUND</span><h2 id="videoTitle">YouTube video</h2><p id="channel"></p></div><div class="duration-pill" id="durationLabel">00:00</div></div></div>
+    <div class="controls">
+      <div class="control-head"><div><span class="eyebrow" data-i18n="selectClip">SELECT CLIP</span><h3 data-i18n="chooseSection">Choose the section you want</h3></div><span class="limit" data-i18n="maxClip">Maximum 30 minutes</span></div>
+      <div class="timeline-wrap"><div class="timeline" id="timeline"><div class="track"></div><div class="selection" id="selection"><button type="button" class="handle left" id="leftHandle" aria-label="Move start"></button><button type="button" class="handle right" id="rightHandle" aria-label="Move end"></button></div></div><div class="timeline-labels"><span id="startTimeline">00:00</span><span id="endTimeline">00:00</span></div></div>
+      <div class="time-grid"><label><span data-i18n="start">Start</span><div class="time-input"><input id="start" inputmode="numeric" value="00:00"><div class="nudge"><button type="button" data-target="start" data-delta="-1">−1s</button><button type="button" data-target="start" data-delta="1">+1s</button></div></div></label><label><span data-i18n="end">End</span><div class="time-input"><input id="end" inputmode="numeric" value="00:30"><div class="nudge"><button type="button" data-target="end" data-delta="-1">−1s</button><button type="button" data-target="end" data-delta="1">+1s</button></div></div></label></div>
+      <div class="format-row"><div><span class="eyebrow" data-i18n="outputFormat">OUTPUT FORMAT</span><div class="format-options"><label class="format active"><input type="radio" name="format" value="mp4" checked><span>MP4</span><small data-i18n="video">Video</small></label><label class="format"><input type="radio" name="format" value="mp3"><span>MP3</span><small data-i18n="audio">Audio</small></label></div></div><div class="clip-info"><span data-i18n="clipLengthLabel">Clip length</span><strong id="clipLength">00:30</strong></div></div>
+      <button id="cutBtn" class="cut-btn" type="button">Cut video <span>→</span></button>
+      <div id="progressBox" class="progress-box hidden"><div class="progress-top"><span id="progressText">Processing your clip…</span><span id="progressStatus">WORKING</span></div><div class="progress-track"><div id="progressBar"></div></div></div>
+      <div id="downloadBox" class="download-box hidden"><div class="success-icon">✓</div><div><strong id="downloadTitle">Your clip is ready</strong><span id="downloadMeta"></span></div><a id="downloadBtn" class="download-btn" href="#" target="_blank" rel="noopener">Download</a></div>
+    </div>
+  </section>
+  <div class="trust"><span data-i18n="trust1">✓ No software required</span><span data-i18n="trust2">✓ MP4 & MP3</span><span data-i18n="trust3">✓ Up to 30 min per clip</span></div>
+</div></section>
+<section id="how" class="section"><div class="container"><div class="section-kicker" data-i18n="howKicker">HOW IT WORKS</div><h2 data-i18n="howTitle">Three simple steps.</h2><div class="steps"><article><b>01</b><h3 data-i18n="step1Title">Paste</h3><p data-i18n="step1Text">Paste a public YouTube video URL into the box above.</p></article><article><b>02</b><h3 data-i18n="step2Title">Select</h3><p data-i18n="step2Text">Set the start and end time of the exact section you need.</p></article><article><b>03</b><h3 data-i18n="step3Title">Cut & download</h3><p data-i18n="step3Text">Choose MP4 or MP3 and let the server create your clip.</p></article></div></div></section>
+<section id="about" class="section about-section"><div class="container"><div class="section-kicker" data-i18n="aboutKicker">ABOUT TAINHACMP3</div><h2 data-i18n="aboutTitle">Built by Minh Dev.</h2><p class="about-copy" data-i18n="aboutText">TaiNhacMP3 was founded and developed by Minh Dev as a simple, fast browser-based tool for cutting public YouTube videos.</p><div class="founder-card"><div class="founder-avatar">MD</div><div><strong>Minh Dev</strong><span data-i18n="founderRole">Founder & developer of TaiNhacMP3</span></div></div></div></section>
+<section id="faq" class="section faq-section"><div class="container"><div class="section-kicker" data-i18n="faqKicker">FAQ</div><h2 data-i18n="faqTitle">Good to know.</h2><div class="faq"><details><summary data-i18n="faq1Q">How long can a clip be?</summary><p data-i18n="faq1A">Each generated clip is limited to 30 minutes. Source videos can be up to 4 hours.</p></details><details><summary data-i18n="faq2Q">Which formats are available?</summary><p data-i18n="faq2A">MP4 for video and MP3 for audio.</p></details><details><summary data-i18n="faq3Q">Do I need to install anything?</summary><p data-i18n="faq3A">No. Processing happens on the TaiNhacMP3 server.</p></details><details><summary data-i18n="faq4Q">Can I cut private or protected videos?</summary><p data-i18n="faq4A">No. Use only public content that you are authorized to download or process.</p></details></div></div></section>
+</main>
+<footer><div class="container footer-inner"><span>© 2026 TaiNhacMP3 · <span data-i18n="footerFounder">Founded by Minh Dev</span></span><span data-i18n="footerLegal">Use only content you are authorized to download or process.</span></div></footer>
+<script>window.DEFAULT_LANG="<?= htmlspecialchars($lang) ?>";</script><script src="assets/app.js?v=4"></script>
+</body></html>
