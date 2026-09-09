@@ -13,5 +13,6 @@ if ! command -v pum >/dev/null 2>&1 && [ ! -f bin/pum ]; then
 fi
 if [ -f bin/pum ]; then chmod +x bin/pum; fi
 pip install -U scdl
-echo 'Install complete. Zing uses the built-in API worker; NCT uses pum; SoundCloud uses scdl.'
+echo 'Install complete. NCT uses pum; SoundCloud uses scdl.'
+echo 'Zing MP3 search/metadata can be handled separately; it is not enabled as a downloader.'
 echo 'Run ./run.sh'
