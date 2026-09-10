@@ -4,6 +4,7 @@
     const timeline = document.getElementById('timeline');
     const start = document.getElementById('start');
     const end = document.getElementById('end');
+    const durationLabel = document.getElementById('durationLabel');
     if (!timeline || !start || !end || timeline.dataset.touchFixed === '1') return;
     timeline.dataset.touchFixed = '1';
     timeline.style.touchAction = 'none';
@@ -21,9 +22,12 @@
       const h = Math.floor(v / 3600);
       const m = Math.floor((v % 3600) / 60);
       const s = v % 60;
-      return h
-        ? `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`
-        : `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+      return h ? `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}` : `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+    };
+    const getTotal = () => {
+      const text = durationLabel?.textContent || '';
+      const n = parse(text);
+      return Number.isFinite(n) && n > 0 ? n : Math.max(parse(end.value), 1);
     };
     const emit = (el) => el.dispatchEvent(new Event('input', {bubbles:true}));
     let drag = null;
@@ -32,11 +36,9 @@
       if (!drag) return;
       e.preventDefault();
       const r = timeline.getBoundingClientRect();
-      const total = Math.max(parse(start.value), parse(end.value), 1);
-      let currentTotal = Number(timeline.dataset.totalSeconds || 0);
-      if (!currentTotal) currentTotal = Math.max(total, 1);
+      const total = getTotal();
       const pct = Math.max(0, Math.min(1, (e.clientX - r.left) / r.width));
-      const value = Math.round(pct * currentTotal);
+      const value = Math.round(pct * total);
       if (drag === 'l') {
         const b = parse(end.value);
         start.value = fmt(Math.min(value, b - 1));
@@ -56,14 +58,12 @@
       drag = handle.classList.contains('left') ? 'l' : 'r';
       try { timeline.setPointerCapture(e.pointerId); } catch {}
     }, true);
-
     timeline.addEventListener('pointermove', (e) => {
       if (!drag) return;
       e.preventDefault();
       e.stopPropagation();
       move(e);
     }, true);
-
     const stop = (e) => {
       if (!drag) return;
       e.preventDefault();
@@ -75,16 +75,7 @@
     timeline.addEventListener('pointercancel', stop, true);
     timeline.addEventListener('lostpointercapture', () => { drag = null; }, true);
     window.addEventListener('blur', () => { drag = null; });
-
-    const updateTotal = () => {
-      const labels = [...document.querySelectorAll('#startTimeline,#endTimeline')];
-      const b = labels[1] ? parse(labels[1].textContent) : NaN;
-      if (Number.isFinite(b) && b > 0) timeline.dataset.totalSeconds = String(b);
-    };
-    new MutationObserver(updateTotal).observe(timeline, {subtree:true, childList:true, attributes:true});
-    updateTotal();
   };
-
   const watch = () => setup();
   new MutationObserver(watch).observe(document.body, {subtree:true, childList:true, attributes:true, attributeFilter:['class']});
   setInterval(watch, 500);
