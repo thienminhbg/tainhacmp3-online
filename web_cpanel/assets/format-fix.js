@@ -1,6 +1,6 @@
-/* TaiNhacMP3: switch ALL format-specific UI text between MP4 video and MP3 audio. */
+/* TaiNhacMP3: keep ALL result/progress/button text aligned with MP4 vs MP3. */
 (() => {
-  const TEXT = {
+  const T={
     vi:{mp4:{cut:'✂ Cắt video ',processing:'Đang xử lý đoạn video…',ready:'Đoạn video đã sẵn sàng',download:'Tải xuống'},mp3:{cut:'✂ Cắt MP3 ',processing:'Đang xử lý MP3…',ready:'MP3 đã sẵn sàng',download:'Tải MP3'}},
     en:{mp4:{cut:'✂ Cut video ',processing:'Processing your video…',ready:'Your video is ready',download:'Download'},mp3:{cut:'✂ Cut MP3 ',processing:'Processing your MP3…',ready:'MP3 is ready',download:'Download MP3'}},
     fr:{mp4:{cut:'✂ Découper la vidéo ',processing:'Traitement de la vidéo…',ready:'Votre vidéo est prête',download:'Télécharger'},mp3:{cut:'✂ Découper le MP3 ',processing:'Traitement du MP3…',ready:'Votre MP3 est prêt',download:'Télécharger le MP3'}},
@@ -13,18 +13,24 @@
     pt:{mp4:{cut:'✂ Cortar vídeo ',processing:'Processando seu vídeo…',ready:'Seu vídeo está pronto',download:'Baixar'},mp3:{cut:'✂ Cortar MP3 ',processing:'Processando seu MP3…',ready:'Seu MP3 está pronto',download:'Baixar MP3'}},
     it:{mp4:{cut:'✂ Taglia video ',processing:'Elaborazione del video…',ready:'Il tuo video è pronto',download:'Scarica'},mp3:{cut:'✂ Taglia MP3 ',processing:'Elaborazione dell’MP3…',ready:'Il tuo MP3 è pronto',download:'Scarica MP3'}}
   };
-  const getFormat=()=>document.querySelector('input[name="format"]:checked')?.value?.toLowerCase()==='mp3'?'mp3':'mp4';
-  const getLang=()=>{const l=document.getElementById('language')?.value||document.documentElement.lang||'en';return TEXT[l]?l:'en';};
+  const lang=()=>{const x=document.getElementById('language')?.value||document.documentElement.lang||'en';return T[x]?x:'en'};
+  const format=()=>document.querySelector('input[name="format"]:checked')?.value?.toLowerCase()==='mp3'?'mp3':'mp4';
   const update=()=>{
-    const f=getFormat(),t=TEXT[getLang()][f];
+    const t=T[lang()][format()];
     const btn=document.getElementById('cutBtn');
-    if(btn){Array.from(btn.childNodes).forEach(n=>{if(n.nodeType===Node.TEXT_NODE)n.textContent=t.cut;});const a=btn.querySelector('span');if(a)a.textContent='→';btn.setAttribute('aria-label',t.cut.trim().replace(/^✂\s*/,''));}
-    const p=document.getElementById('progressText');if(p)p.textContent=t.processing;
-    const d=document.getElementById('downloadTitle');if(d)d.textContent=t.ready;
-    const b=document.getElementById('downloadBtn');if(b)b.textContent=t.download;
-    const m=document.getElementById('downloadMeta');if(m&&m.textContent){const x=m.textContent.match(/[•·]\s*(\d{1,2}:\d{2}(?::\d{2})?)/);if(x)m.textContent=`${f.toUpperCase()} • ${x[1]}`;}
+    if(btn){const nodes=Array.from(btn.childNodes).filter(n=>n.nodeType===Node.TEXT_NODE);if(nodes.length&&nodes[0].textContent.trim()!==t.cut.trim())nodes[0].textContent=t.cut;const a=btn.querySelector('span');if(a)a.textContent='→';btn.setAttribute('aria-label',t.cut.trim().replace(/^✂\s*/,''));}
+    const p=document.getElementById('progressText');if(p&&p.textContent) p.textContent=t.processing;
+    const d=document.getElementById('downloadTitle');if(d&&d.textContent) d.textContent=t.ready;
+    const b=document.getElementById('downloadBtn');if(b&&b.textContent) b.textContent=t.download;
+    const m=document.getElementById('downloadMeta');
+    if(m&&m.textContent){const dur=m.textContent.match(/(?:MP4|MP3)\s*•\s*(\d{1,2}:\d{2}(?::\d{2})?)/i)||m.textContent.match(/\b(\d{1,2}:\d{2}(?::\d{2})?)\b/);if(dur)m.textContent=`${format().toUpperCase()} • ${dur[1]}`;}
   };
-  document.addEventListener('change',e=>{if(e.target?.matches('input[name="format"],#language'))update();});
-  const observer=new MutationObserver(update);observer.observe(document.body,{subtree:true,childList:true});
-  update();
+  const bind=()=>{
+    update();
+    document.getElementById('language')?.addEventListener('change',update);
+    document.addEventListener('change',e=>{if(e.target?.matches('input[name="format"]'))update()});
+    const watchIds=['progressBox','downloadBox'];
+    watchIds.forEach(id=>{const el=document.getElementById(id);if(el)new MutationObserver(()=>update()).observe(el,{subtree:true,childList:true});});
+  };
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',bind,{once:true});else bind();
 })();
