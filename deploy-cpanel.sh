@@ -13,9 +13,9 @@ test -f "$WEB_DIR/index.php"
 test -f "$WEB_DIR/assets/app.js"
 test -f "$WEB_DIR/assets/style.css"
 
-echo '[3/4] Syncing web_cpanel to public_html...'
+echo '[3/4] Copying web_cpanel to public_html...'
 mkdir -p "$PUBLIC_DIR"
-rsync -av --delete "$WEB_DIR/" "$PUBLIC_DIR/"
+cp -a "$WEB_DIR/." "$PUBLIC_DIR/"
 
 echo '[4/4] Checking deployment...'
 test -f "$PUBLIC_DIR/index.php"
