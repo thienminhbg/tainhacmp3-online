@@ -17,6 +17,17 @@
     localStorage.setItem('tainhac-theme', n);
   };
 
+  const autoConfirm = () => {
+    const input = document.getElementById('url');
+    const form = document.getElementById('infoForm');
+    if (!input || !form) return;
+    const value = input.value.trim();
+    if (/^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.be)\//i.test(value)) {
+      if (typeof form.requestSubmit === 'function') form.requestSubmit();
+      else form.submit();
+    }
+  };
+
   const init = () => {
     const nav = document.querySelector('.nav nav');
     const language = document.getElementById('language');
@@ -41,6 +52,14 @@
 
     language.insertAdjacentElement('afterend', select);
     apply(saved);
+
+    const input = document.getElementById('url');
+    const pasteBtn = document.getElementById('pasteBtn');
+    if (input) {
+      input.addEventListener('paste', () => setTimeout(autoConfirm, 80));
+      input.addEventListener('drop', () => setTimeout(autoConfirm, 80));
+    }
+    if (pasteBtn) pasteBtn.addEventListener('click', () => setTimeout(autoConfirm, 150));
   };
 
   if (document.readyState === 'loading') {
