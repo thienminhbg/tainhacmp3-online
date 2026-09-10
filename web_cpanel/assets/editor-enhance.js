@@ -1,4 +1,4 @@
-/* TaiNhacMP3 editor enhancement: playback, set IN/OUT, millisecond nudging and draggable timeline. */
+/* TaiNhacMP3 editor enhancement: simple minute/second editing. */
 (() => {
   const LANG = {
     vi:{trim:'CẮT',setIn:'ĐẶT VÀO',setOut:'ĐẶT RA',start:'BẮT ĐẦU',end:'KẾT THÚC',selected:'THỜI LƯỢNG ĐÃ CHỌN',back5:'Lùi 5 giây',forward5:'Tiến 5 giây',play:'Phát',pause:'Tạm dừng',reset:'Đặt lại'},
@@ -15,7 +15,7 @@
   };
   const tr=()=>LANG[document.getElementById('language')?.value]||LANG.en;
   const parse=v=>{v=String(v||'').trim();if(/^\d+(?:\.\d+)?$/.test(v))return Number(v);const p=v.split(':').map(Number);if(p.some(Number.isNaN))return NaN;return p.length===2?p[0]*60+p[1]:p.length===3?p[0]*3600+p[1]*60+p[2]:NaN};
-  const fmt=s=>{s=Math.max(0,Number(s)||0);const h=Math.floor(s/3600),m=Math.floor((s%3600)/60),x=(s%60).toFixed(3).padStart(6,'0');return h?`${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${x}`:`${String(m).padStart(2,'0')}:${x}`};
+  const fmt=s=>{s=Math.max(0,Math.round(Number(s)||0));const h=Math.floor(s/3600),m=Math.floor((s%3600)/60),x=s%60;return h?`${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(x).padStart(2,'0')}`:`${String(m).padStart(2,'0')}:${String(x).padStart(2,'0')}`};
   const videoId=()=>{try{const u=new URL(document.getElementById('url')?.value||'');if(u.hostname.includes('youtu.be'))return u.pathname.slice(1).split('/')[0];return u.searchParams.get('v')||((u.pathname.match(/\/(?:shorts|live)\/([^/]+)/)||[])[1]);}catch{return null}};
 
   function enhance(){
@@ -26,23 +26,23 @@
     const bar=document.createElement('div');bar.className='precision-toolbar';bar.innerHTML=`<button class="p-icon" data-act="back" title="">|◀</button><button class="p-skip" data-act="back">◀ 5s</button><button class="p-play" data-act="play">▶</button><button class="p-skip" data-act="forward">5s ▶</button><button class="p-icon" data-act="forward" title="">▶|</button><button class="p-icon" data-act="reset">↻</button>`;
     const trim=document.createElement('div');trim.className='precision-trim';trim.innerHTML=`<span class="p-trim"></span><button data-act="in" class="p-in">← <span class="p-setin"></span></button><button data-act="out" class="p-out"><span class="p-setout"></span> →</button>`;
     controls.insertBefore(bar,controls.firstChild);controls.insertBefore(trim,bar.nextSibling);
-    const durationBox=document.createElement('div');durationBox.className='precision-duration';durationBox.innerHTML=`<span class="p-selected"></span><strong id="precisionDuration">00:00.000</strong>`;controls.appendChild(durationBox);
-    const nudge=label=>{const old=label.querySelector('.nudge');if(!old)return;old.innerHTML='<button type="button" data-step="-1">−1s</button><button type="button" data-step="-0.1">−0.1</button><button type="button" data-step="0.1">+0.1</button><button type="button" data-step="1">+1s</button>';old.querySelectorAll('button').forEach(b=>b.onclick=()=>{let v=parse(label.querySelector('input').value);v+=Number(b.dataset.step);v=Math.max(0,v);label.querySelector('input').value=fmt(v);sync()})};
+    const durationBox=document.createElement('div');durationBox.className='precision-duration';durationBox.innerHTML=`<span class="p-selected"></span><strong id="precisionDuration">00:00</strong>`;controls.appendChild(durationBox);
+    const nudge=label=>{const old=label.querySelector('.nudge');if(!old)return;old.innerHTML='<button type="button" data-step="-1">−1s</button><button type="button" data-step="+1">+1s</button>';old.querySelectorAll('button').forEach(b=>b.onclick=()=>{let v=parse(label.querySelector('input').value);if(!Number.isFinite(v))v=0;v+=Number(b.dataset.step);v=Math.max(0,Math.round(v));label.querySelector('input').value=fmt(v);sync()})};
     nudge(start.closest('label'));nudge(end.closest('label'));
-    let total=0,current=0,playing=false,player=null;
+    let total=0,playing=false,player=null;
     const playerReady=()=>{const id=videoId();if(!id)return;const preview=ed.querySelector('.preview');if(!preview)return;let frame=preview.querySelector('iframe');if(!frame){frame=document.createElement('iframe');frame.className='precision-video';frame.allow='autoplay; encrypted-media; picture-in-picture';frame.allowFullscreen=true;frame.src=`https://www.youtube.com/embed/${encodeURIComponent(id)}?enablejsapi=1&origin=${encodeURIComponent(location.origin)}&rel=0`;preview.innerHTML='';preview.appendChild(frame)}
       const init=()=>{try{player=new YT.Player(frame,{events:{onReady:e=>{total=Number(e.target.getDuration())||total;sync();},onStateChange:e=>{playing=e.data===1;bar.querySelector('.p-play').textContent=playing?'Ⅱ':'▶';}}})}catch{}};
       if(window.YT&&YT.Player)init();else{const s=document.createElement('script');s.src='https://www.youtube.com/iframe_api';document.head.appendChild(s);window.onYouTubeIframeAPIReady=init;}
     };
-    const sync=()=>{let a=parse(start.value),b=parse(end.value);if(!Number.isFinite(a))a=0;if(!Number.isFinite(b))b=Math.min(30,total||30);if(total)b=Math.min(b,total);if(b<=a)b=Math.min(a+0.001,total||a+30);start.value=fmt(a);end.value=fmt(b);document.getElementById('precisionDuration').textContent=fmt(b-a);const sel=timeline.querySelector('#selection');if(sel&&total){sel.style.left=(a/total*100)+'%';sel.style.width=((b-a)/total*100)+'%';}ed.querySelector('#startTimeline').textContent=fmt(a);ed.querySelector('#endTimeline').textContent=fmt(b)};
+    const sync=()=>{let a=parse(start.value),b=parse(end.value);if(!Number.isFinite(a))a=0;if(!Number.isFinite(b))b=Math.min(30,total||30);a=Math.round(a);b=Math.round(b);if(total)b=Math.min(b,Math.floor(total));if(b<=a)b=Math.min(a+1,Math.floor(total||a+30));start.value=fmt(a);end.value=fmt(b);document.getElementById('precisionDuration').textContent=fmt(b-a);const sel=timeline.querySelector('#selection');if(sel&&total){sel.style.left=(a/total*100)+'%';sel.style.width=((b-a)/total*100)+'%';}ed.querySelector('#startTimeline').textContent=fmt(a);ed.querySelector('#endTimeline').textContent=fmt(b)};
     const seek=s=>{if(player&&player.seekTo)player.seekTo(Math.max(0,Math.min(total||1,s)),true)};
     const now=()=>player&&player.getCurrentTime?Number(player.getCurrentTime()):parse(start.value);
     const set=(field,v)=>{const el=field==='start'?start:end;el.value=fmt(v);sync()};
-    bar.onclick=e=>{const b=e.target.closest('[data-act]');if(!b)return;const act=b.dataset.act;let t=now();if(act==='play'){if(player){playing?player.pauseVideo():player.playVideo();}else playerReady();}else if(act==='back')seek(t-5);else if(act==='forward')seek(t+5);else if(act==='reset'){set('start',0);set('end',Math.min(30,total||30));seek(0)}};
-    trim.onclick=e=>{const b=e.target.closest('[data-act]');if(!b)return;const t=now();if(b.dataset.act==='in')set('start',Math.min(t,parse(end.value)-0.001));else set('end',Math.max(t,parse(start.value)+0.001));};
-    [start,end].forEach(x=>x.addEventListener('input',sync));
+    bar.onclick=e=>{const b=e.target.closest('[data-act]');if(!b)return;const act=b.dataset.act;let t=now();if(act==='play'){if(player){playing?player.pauseVideo():player.playVideo();}else playerReady();}else if(act==='back')seek(t-5);else if(act==='forward')seek(t+5);else if(act==='reset'){set('start',0);set('end',Math.min(30,Math.floor(total||30)));seek(0)}};
+    trim.onclick=e=>{const b=e.target.closest('[data-act]');if(!b)return;const t=Math.round(now());if(b.dataset.act==='in')set('start',Math.min(t,parse(end.value)-1));else set('end',Math.max(t,parse(start.value)+1));};
+    [start,end].forEach(x=>x.addEventListener('input',()=>{const v=parse(x.value);if(Number.isFinite(v))x.value=fmt(v);sync()}));
     let drag=null;
-    const dragAt=e=>{if(!drag||!total)return;const r=timeline.getBoundingClientRect(),pct=Math.max(0,Math.min(1,(e.clientX-r.left)/r.width)),v=pct*total;if(drag==='l')set('start',Math.min(v,parse(end.value)-0.001));else set('end',Math.max(v,parse(start.value)+0.001));};
+    const dragAt=e=>{if(!drag||!total)return;const r=timeline.getBoundingClientRect(),pct=Math.max(0,Math.min(1,(e.clientX-r.left)/r.width)),v=Math.round(pct*total);if(drag==='l')set('start',Math.min(v,parse(end.value)-1));else set('end',Math.max(v,parse(start.value)+1));};
     timeline.addEventListener('pointerdown',e=>{if(!e.target.closest('.handle'))return;drag=e.target.closest('.handle').classList.contains('left')?'l':'r';timeline.setPointerCapture(e.pointerId)});timeline.addEventListener('pointermove',dragAt);timeline.addEventListener('pointerup',()=>drag=null);timeline.addEventListener('pointercancel',()=>drag=null);
     const text=()=>{const x=tr();bar.querySelector('[data-act="back"]').title=x.back5;bar.querySelector('[data-act="forward"]').title=x.forward5;trim.querySelector('.p-trim').textContent=x.trim;trim.querySelector('.p-setin').textContent=x.setIn;trim.querySelector('.p-setout').textContent=x.setOut;controls.querySelector('.p-selected').textContent=x.selected};text();document.getElementById('language')?.addEventListener('change',text);
     sync();playerReady();
