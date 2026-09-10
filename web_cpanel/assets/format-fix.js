@@ -1,4 +1,4 @@
-/* TaiNhacMP3: MP4/MP3 button label only. Keep the existing app API flow untouched. */
+/* TaiNhacMP3: keep the cut button label synchronized with the selected MP4/MP3 format. */
 (() => {
   const getFormat = () => {
     const el = document.querySelector('input[name="format"]:checked');
@@ -9,25 +9,24 @@
     const btn = document.getElementById('cutBtn');
     if (!btn) return;
     const format = getFormat();
-    const arrow = btn.querySelector('span');
+    const wanted = format === 'mp3' ? '✂ Cắt MP3 ' : '✂ Cắt video ';
     Array.from(btn.childNodes).forEach(node => {
-      if (node.nodeType === Node.TEXT_NODE) {
-        node.textContent = format === 'mp3' ? '✂ Cắt MP3 ' : '✂ Cắt video ';
+      if (node.nodeType === Node.TEXT_NODE && node.textContent.trim() !== wanted.trim()) {
+        node.textContent = wanted;
       }
     });
-    if (arrow) arrow.textContent = '→';
+    const arrow = btn.querySelector('span');
+    if (arrow && arrow.textContent !== '→') arrow.textContent = '→';
     btn.dataset.outputFormat = format;
     btn.setAttribute('aria-label', format === 'mp3' ? 'Cắt MP3' : 'Cắt video');
   };
 
   document.addEventListener('change', event => {
     if (event.target && event.target.matches('input[name="format"]')) {
-      updateButton();
+      setTimeout(updateButton, 0);
     }
   });
 
-  const observer = new MutationObserver(updateButton);
-  observer.observe(document.body, {subtree: true, childList: true});
-
   updateButton();
+  setInterval(updateButton, 500);
 })();
