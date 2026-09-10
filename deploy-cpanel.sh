@@ -13,18 +13,27 @@ test -f "$WEB_DIR/index.php"
 test -f "$WEB_DIR/assets/app.js"
 test -f "$WEB_DIR/assets/style.css"
 test -f "$WEB_DIR/assets/direct2.js"
+test -f "$WEB_DIR/assets/editor-enhance.js"
+test -f "$WEB_DIR/assets/editor-enhance.css"
 
 echo '[3/5] Copying web_cpanel to public_html...'
 mkdir -p "$PUBLIC_DIR"
 cp -a "$WEB_DIR/." "$PUBLIC_DIR/"
 
-echo '[4/5] Enabling fixed Direct Browser module...'
+echo '[4/5] Enabling enhanced editor...'
 if ! grep -q 'assets/direct2.js' "$PUBLIC_DIR/index.php"; then
   sed -i 's#</body>#<script src="assets/direct2.js?v=1"></script></body>#' "$PUBLIC_DIR/index.php"
+fi
+if ! grep -q 'assets/editor-enhance.css' "$PUBLIC_DIR/index.php"; then
+  sed -i 's#</head>#<link rel="stylesheet" href="assets/editor-enhance.css?v=1"></head>#' "$PUBLIC_DIR/index.php"
+fi
+if ! grep -q 'assets/editor-enhance.js' "$PUBLIC_DIR/index.php"; then
+  sed -i 's#</body>#<script src="assets/editor-enhance.js?v=1"></script></body>#' "$PUBLIC_DIR/index.php"
 fi
 
 echo '[5/5] Checking deployment...'
 test -f "$PUBLIC_DIR/index.php"
-test -f "$PUBLIC_DIR/assets/direct2.js"
-grep -q 'assets/direct2.js' "$PUBLIC_DIR/index.php"
+test -f "$PUBLIC_DIR/assets/editor-enhance.js"
+test -f "$PUBLIC_DIR/assets/editor-enhance.css"
+grep -q 'assets/editor-enhance.js' "$PUBLIC_DIR/index.php"
 echo 'cPanel deploy completed.'
