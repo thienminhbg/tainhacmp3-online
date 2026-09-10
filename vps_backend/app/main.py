@@ -156,38 +156,92 @@ def worker(jid: str, url: str, start: float, end: float, output_format: str, tit
     d = DOWNLOADS / jid
     d.mkdir(exist_ok=True)
     jobs[jid]['status'] = 'processing'
+    source = None
     try:
-        duration = end - start
-        validate_clip(start, end, start + duration)
+        # Download the source media to the VPS first. Do not pass YouTube's
+        # short-lived googlevideo URL directly to FFmpeg; those URLs can return 403.
+        source_template = str(d / 'source.%(ext)s')
         if output_format == 'mp3':
-            template = str(d / 'clip.%(ext)s')
-            args = [
-                '--download-sections', f'*{fmt_time(start)}-{fmt_time(end)}',
-                '-x', '--audio-format', 'mp3', '--audio-quality', '192K',
-                '-o', template, url,
+            download_args = [
+                '-f', 'bestaudio/best',
+                '-o', source_template,
+                url,
             ]
         else:
-            template = str(d / 'clip.%(ext)s')
-            args = [
-                '--download-sections', f'*{fmt_time(start)}-{fmt_time(end)}',
-                '-f', 'bv*+ba/b', '--merge-output-format', 'mp4',
-                '-o', template, url,
+            download_args = [
+                '-f', 'bv*+ba/b',
+                '--merge-output-format', 'mp4',
+                '-o', source_template,
+                url,
             ]
-        r = run_yt_dlp(args, CUT_TIMEOUT)
+
+        r = run_yt_dlp(download_args, CUT_TIMEOUT)
+        if r.returncode:
+            raise RuntimeError((r.stderr or r.stdout or 'Download failed')[-3000:])
+
+        candidates = [
+            p for p in d.glob('source.*')
+            if p.is_file() and p.stat().st_size > 0
+        ]
+        if not candidates:
+            raise RuntimeError('No source file was downloaded')
+        source = max(candidates, key=lambda p: p.stat().st_mtime)
+
+        duration = ffprobe_duration(source)
+        validate_clip(start, end, duration)
+        clip_duration = end - start
+        out = d / ('clip.mp3' if output_format == 'mp3' else 'clip.mp4')
+
+        if output_format == 'mp3':
+            cmd = [
+                'ffmpeg', '-y',
+                '-ss', str(start),
+                '-i', str(source),
+                '-t', str(clip_duration),
+                '-vn',
+                '-c:a', 'libmp3lame',
+                '-b:a', '192k',
+                str(out),
+            ]
+        else:
+            cmd = [
+                'ffmpeg', '-y',
+                '-ss', str(start),
+                '-i', str(source),
+                '-t', str(clip_duration),
+                '-c:v', 'libx264',
+                '-preset', 'veryfast',
+                '-c:a', 'aac',
+                '-movflags', '+faststart',
+                str(out),
+            ]
+
+        r = subprocess.run(
+            cmd, cwd=BASE, text=True, capture_output=True, timeout=CUT_TIMEOUT
+        )
         if r.returncode:
             raise RuntimeError((r.stderr or r.stdout or 'Cut failed')[-3000:])
-        ext = '.mp3' if output_format == 'mp3' else '.mp4'
-        candidates = [p for p in d.glob('*') if p.is_file() and p.suffix.lower() == ext]
-        if not candidates:
+        if not out.exists() or out.stat().st_size == 0:
             raise RuntimeError('No output file was produced')
-        source = max(candidates, key=lambda p: p.stat().st_mtime)
+
+        ext = '.mp3' if output_format == 'mp3' else '.mp4'
         final_name = safe_name(f'{title} [{fmt_time(start)}-{fmt_time(end)}]') + ext
         target = d / final_name
-        source.rename(target)
-        jobs[jid].update(status='done', filename=target.name, title=title,
-                          format=output_format, download_url=f'/api/file/{jid}/{target.name}')
+        out.rename(target)
+        jobs[jid].update(
+            status='done', filename=target.name, title=title,
+            format=output_format, download_url=f'/api/file/{jid}/{target.name}'
+        )
+    except subprocess.TimeoutExpired:
+        jobs[jid].update(status='error', error='Processing timed out')
     except Exception as e:
         jobs[jid].update(status='error', error=str(e))
+    finally:
+        if source:
+            try:
+                source.unlink(missing_ok=True)
+            except Exception:
+                pass
 
 
 def upload_worker(jid: str, source: Path, start: float, end: float, output_format: str, title: str):
