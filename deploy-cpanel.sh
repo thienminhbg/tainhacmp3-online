@@ -15,25 +15,33 @@ test -f "$WEB_DIR/assets/style.css"
 test -f "$WEB_DIR/assets/direct2.js"
 test -f "$WEB_DIR/assets/editor-enhance.js"
 test -f "$WEB_DIR/assets/editor-enhance.css"
+test -f "$WEB_DIR/assets/timeline-fix.js"
 
 echo '[3/5] Copying web_cpanel to public_html...'
 mkdir -p "$PUBLIC_DIR"
 cp -a "$WEB_DIR/." "$PUBLIC_DIR/"
 
 echo '[4/5] Enabling enhanced editor...'
+# Remove the older broken Direct Browser module if present.
+sed -i -E 's#<script[^>]+assets/direct\.js[^>]*></script>##g' "$PUBLIC_DIR/index.php"
 if ! grep -q 'assets/direct2.js' "$PUBLIC_DIR/index.php"; then
-  sed -i 's#</body>#<script src="assets/direct2.js?v=1"></script></body>#' "$PUBLIC_DIR/index.php"
+  sed -i 's#</body>#<script src="assets/direct2.js?v=2"></script></body>#' "$PUBLIC_DIR/index.php"
 fi
 if ! grep -q 'assets/editor-enhance.css' "$PUBLIC_DIR/index.php"; then
-  sed -i 's#</head>#<link rel="stylesheet" href="assets/editor-enhance.css?v=1"></head>#' "$PUBLIC_DIR/index.php"
+  sed -i 's#</head>#<link rel="stylesheet" href="assets/editor-enhance.css?v=2"></head>#' "$PUBLIC_DIR/index.php"
 fi
 if ! grep -q 'assets/editor-enhance.js' "$PUBLIC_DIR/index.php"; then
-  sed -i 's#</body>#<script src="assets/editor-enhance.js?v=1"></script></body>#' "$PUBLIC_DIR/index.php"
+  sed -i 's#</body>#<script src="assets/editor-enhance.js?v=2"></script></body>#' "$PUBLIC_DIR/index.php"
+fi
+if ! grep -q 'assets/timeline-fix.js' "$PUBLIC_DIR/index.php"; then
+  sed -i 's#</body>#<script src="assets/timeline-fix.js?v=1"></script></body>#' "$PUBLIC_DIR/index.php"
 fi
 
 echo '[5/5] Checking deployment...'
 test -f "$PUBLIC_DIR/index.php"
 test -f "$PUBLIC_DIR/assets/editor-enhance.js"
 test -f "$PUBLIC_DIR/assets/editor-enhance.css"
+test -f "$PUBLIC_DIR/assets/timeline-fix.js"
 grep -q 'assets/editor-enhance.js' "$PUBLIC_DIR/index.php"
+grep -q 'assets/timeline-fix.js' "$PUBLIC_DIR/index.php"
 echo 'cPanel deploy completed.'
