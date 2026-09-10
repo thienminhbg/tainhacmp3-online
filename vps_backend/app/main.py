@@ -158,8 +158,8 @@ def worker(jid: str, url: str, start: float, end: float, output_format: str, tit
     jobs[jid]['status'] = 'processing'
     source = None
     try:
-        # Download the source media to the VPS first. Do not pass YouTube's
-        # short-lived googlevideo URL directly to FFmpeg; those URLs can return 403.
+        # Download to a local VPS file first. FFmpeg never receives a short-lived
+        # YouTube googlevideo URL, avoiding the 403 errors from direct access.
         source_template = str(d / 'source.%(ext)s')
         if output_format == 'mp3':
             download_args = [
@@ -168,9 +168,11 @@ def worker(jid: str, url: str, start: float, end: float, output_format: str, tit
                 url,
             ]
         else:
+            # Prefer a single combined format. This is more compatible with
+            # Shorts/videos whose available formats do not expose separate
+            # video+audio streams to the selected YouTube client.
             download_args = [
-                '-f', 'bv*+ba/b',
-                '--merge-output-format', 'mp4',
+                '-f', 'best',
                 '-o', source_template,
                 url,
             ]
