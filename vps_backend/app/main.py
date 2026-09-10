@@ -25,7 +25,6 @@ CUT_TIMEOUT = 900
 UPLOAD_TIMEOUT = 900
 jobs = {}
 
-YOUTUBE_EXTRACTOR_ARGS = 'youtube:player_client=web_embedded'
 ALLOWED_UPLOAD_EXTS = {'.mp4', '.mkv', '.webm', '.mov', '.m4v', '.avi', '.mpeg', '.mpg'}
 
 app = FastAPI(title='TaiNhacMP3 YouTube Cutter')
@@ -79,8 +78,11 @@ def run_yt_dlp(args, timeout):
     exe = shutil.which('yt-dlp') or str(BASE / '.venv' / 'bin' / 'yt-dlp')
     if not Path(exe).exists() and not shutil.which('yt-dlp'):
         raise RuntimeError('yt-dlp is not installed. Run: python -m pip install -U yt-dlp')
+    # Do not force a specific YouTube player client. YouTube changes the
+    # formats exposed by clients frequently; yt-dlp should negotiate the
+    # formats available to the server at request time.
     return subprocess.run(
-        [exe, '--no-playlist', '--no-warnings', '--extractor-args', YOUTUBE_EXTRACTOR_ARGS, *args],
+        [exe, '--no-playlist', '--no-warnings', *args],
         cwd=BASE,
         text=True,
         capture_output=True,
@@ -158,8 +160,6 @@ def worker(jid: str, url: str, start: float, end: float, output_format: str, tit
     jobs[jid]['status'] = 'processing'
     source = None
     try:
-        # Download to a local VPS file first. FFmpeg never receives a short-lived
-        # YouTube googlevideo URL, avoiding the 403 errors from direct access.
         source_template = str(d / 'source.%(ext)s')
         if output_format == 'mp3':
             download_args = [
@@ -168,9 +168,6 @@ def worker(jid: str, url: str, start: float, end: float, output_format: str, tit
                 url,
             ]
         else:
-            # Prefer a single combined format. This is more compatible with
-            # Shorts/videos whose available formats do not expose separate
-            # video+audio streams to the selected YouTube client.
             download_args = [
                 '-f', 'best',
                 '-o', source_template,
@@ -196,31 +193,19 @@ def worker(jid: str, url: str, start: float, end: float, output_format: str, tit
 
         if output_format == 'mp3':
             cmd = [
-                'ffmpeg', '-y',
-                '-ss', str(start),
-                '-i', str(source),
-                '-t', str(clip_duration),
-                '-vn',
-                '-c:a', 'libmp3lame',
-                '-b:a', '192k',
-                str(out),
+                'ffmpeg', '-y', '-ss', str(start), '-i', str(source),
+                '-t', str(clip_duration), '-vn', '-c:a', 'libmp3lame',
+                '-b:a', '192k', str(out),
             ]
         else:
             cmd = [
-                'ffmpeg', '-y',
-                '-ss', str(start),
-                '-i', str(source),
-                '-t', str(clip_duration),
-                '-c:v', 'libx264',
-                '-preset', 'veryfast',
-                '-c:a', 'aac',
-                '-movflags', '+faststart',
+                'ffmpeg', '-y', '-ss', str(start), '-i', str(source),
+                '-t', str(clip_duration), '-c:v', 'libx264',
+                '-preset', 'veryfast', '-c:a', 'aac', '-movflags', '+faststart',
                 str(out),
             ]
 
-        r = subprocess.run(
-            cmd, cwd=BASE, text=True, capture_output=True, timeout=CUT_TIMEOUT
-        )
+        r = subprocess.run(cmd, cwd=BASE, text=True, capture_output=True, timeout=CUT_TIMEOUT)
         if r.returncode:
             raise RuntimeError((r.stderr or r.stdout or 'Cut failed')[-3000:])
         if not out.exists() or out.stat().st_size == 0:
@@ -380,51 +365,35 @@ async def upload_cut(req: Request, file: UploadFile = File(...), start: float = 
                 if size > MAX_UPLOAD_BYTES:
                     raise HTTPException(413, 'Uploaded file is larger than the 500 MB limit.')
                 f.write(chunk)
-        duration = ffprobe_duration(source)
-        try:
-            validate_clip(float(start), float(end), duration)
-        except ValueError:
-            raise HTTPException(400, 'Invalid start or end time')
-        except RuntimeError as e:
-            raise HTTPException(400, str(e))
-        title = Path(file.filename or 'uploaded-video').stem
-        jobs[jid] = {'status': 'queued', 'title': title, 'format': output_format,
-                     'start': float(start), 'end': float(end)}
-        threading.Thread(target=upload_worker, args=(jid, source, float(start), float(end), output_format, title), daemon=True).start()
-        return {'job_id': jid, 'status': 'queued'}
     except HTTPException:
-        try:
-            source.unlink(missing_ok=True)
-        except Exception:
-            pass
-        raise
-    except subprocess.TimeoutExpired:
         source.unlink(missing_ok=True)
-        raise HTTPException(504, 'Video inspection timed out')
+        raise
     except Exception as e:
         source.unlink(missing_ok=True)
         raise HTTPException(400, str(e))
+    jobs[jid] = {'status': 'queued', 'title': Path(file.filename or 'uploaded').stem,
+                 'format': output_format, 'start': start, 'end': end}
+    threading.Thread(target=upload_worker,
+                     args=(jid, source, start, end, output_format, Path(file.filename or 'uploaded').stem),
+                     daemon=True).start()
+    return {'job_id': jid, 'status': 'queued'}
 
 
 @app.get('/api/status/{jid}')
-def status(req: Request, jid: str):
-    if req.headers.get('origin') not in (None, *WEB_ORIGINS):
-        raise HTTPException(403, 'Origin not allowed')
-    if jid not in jobs:
+def status(jid: str):
+    job = jobs.get(jid)
+    if not job:
         raise HTTPException(404, 'Job not found')
-    return jobs[jid]
+    return job
 
 
 @app.get('/api/file/{jid}/{filename}')
-def file(req: Request, jid: str, filename: str):
-    if req.headers.get('origin') not in (None, *WEB_ORIGINS):
-        raise HTTPException(403, 'Origin not allowed')
-    if jid not in jobs or jobs[jid].get('status') != 'done':
-        raise HTTPException(404, 'File not ready')
-    if Path(filename).name != filename:
-        raise HTTPException(400, 'Invalid filename')
-    p = DOWNLOADS / jid / filename
-    if not p.exists():
+def file(jid: str, filename: str):
+    job = jobs.get(jid)
+    if not job or job.get('status') != 'done':
         raise HTTPException(404, 'File not found')
-    media = 'audio/mpeg' if p.suffix.lower() == '.mp3' else 'video/mp4'
-    return FileResponse(p, filename=filename, media_type=media)
+    target = DOWNLOADS / jid / filename
+    if not target.exists() or target.parent != DOWNLOADS / jid:
+        raise HTTPException(404, 'File not found')
+    media_type = 'audio/mpeg' if target.suffix.lower() == '.mp3' else 'video/mp4'
+    return FileResponse(target, media_type=media_type, filename=target.name)
