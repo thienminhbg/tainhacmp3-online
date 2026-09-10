@@ -1,35 +1,111 @@
 <?php
-$country = strtoupper($_SERVER['HTTP_CF_IPCOUNTRY'] ?? '');
-$map = ['VN'=>'vi','US'=>'en','GB'=>'en','CA'=>'en','AU'=>'en','FR'=>'fr','DE'=>'de','ES'=>'es','ID'=>'id','TH'=>'th','JP'=>'ja','KR'=>'ko','BR'=>'pt','IT'=>'it'];
-$lang = $map[$country] ?? 'en';
+$lang = 'vi';
 ?>
 <!doctype html>
-<html lang="<?= htmlspecialchars($lang) ?>">
+<html lang="vi">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <meta name="theme-color" content="#0b1220">
-  <title>TaiNhacMP3 – YouTube Video Cutter | Minh Dev</title>
-  <meta name="description" content="Cắt video YouTube bằng link. Chọn thời gian và tạo MP4 hoặc MP3 nhanh chóng với TaiNhacMP3.">
+  <meta name="theme-color" content="#09090b">
+  <title>Tải nhạc MP3 128kbps – Trình tải nhạc trực tuyến</title>
+  <meta name="description" content="Công cụ trực tuyến giúp lấy thông tin và tải MP3 128kbps từ các liên kết Zing MP3 mà bạn có quyền sử dụng.">
   <meta name="robots" content="index,follow,max-image-preview:large">
   <meta name="author" content="Minh Dev">
-  <meta name="keywords" content="cắt video YouTube, cắt YouTube online, YouTube video cutter, YouTube clip cutter, MP4, MP3, TaiNhacMP3">
+  <meta name="keywords" content="tải nhạc MP3, tải nhạc 128kbps, Zing MP3 128kbps, download MP3">
   <link rel="canonical" href="https://tainhacmp3.online/">
-  <meta property="og:type" content="website"><meta property="og:url" content="https://tainhacmp3.online/"><meta property="og:site_name" content="TaiNhacMP3"><meta property="og:title" content="TaiNhacMP3 – YouTube Video Cutter"><meta property="og:description" content="Cắt video YouTube bằng link và tạo MP4 hoặc MP3.">
-  <meta name="twitter:card" content="summary"><meta name="twitter:title" content="TaiNhacMP3 – YouTube Video Cutter"><meta name="twitter:description" content="Cắt video YouTube bằng link và tạo MP4 hoặc MP3.">
-  <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"TaiNhacMP3","url":"https://tainhacmp3.online/","applicationCategory":"MultimediaApplication","operatingSystem":"Web","description":"YouTube video cutter for public content.","author":{"@type":"Person","name":"Minh Dev"},"offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}</script>
-  <link rel="stylesheet" href="assets/style.css?v=5"><link rel="stylesheet" href="assets/ytcut-style.css?v=1">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://tainhacmp3.online/">
+  <meta property="og:title" content="Tải nhạc MP3 128kbps">
+  <meta property="og:description" content="Công cụ tải MP3 128kbps trực tuyến cho các liên kết bạn được phép sử dụng.">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Tải nhạc MP3 128kbps">
+  <meta name="twitter:description" content="Tải MP3 128kbps trực tuyến.">
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"TaiNhacMP3","url":"https://tainhacmp3.online/","applicationCategory":"MultimediaApplication","operatingSystem":"Web","description":"Online MP3 128kbps downloader for content the user is authorized to use.","author":{"@type":"Person","name":"Minh Dev"},"offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}</script>
+  <link rel="stylesheet" href="assets/style.css?v=6">
 </head>
 <body>
-<header class="topbar"><div class="container nav"><a class="brand" href="/"><span class="brand-mark">T</span><span>TaiNhacMP3</span></a><nav><a href="#how" data-i18n="navHow">How it works</a><a href="#faq" data-i18n="navFaq">FAQ</a><select id="language" aria-label="Language"><option value="vi">🇻🇳 Tiếng Việt</option><option value="en">🇺🇸 English</option><option value="fr">🇫🇷 Français</option><option value="de">🇩🇪 Deutsch</option><option value="es">🇪🇸 Español</option><option value="id">🇮🇩 Indonesia</option><option value="th">🇹🇭 ไทย</option><option value="ja">🇯🇵 日本語</option><option value="ko">🇰🇷 한국어</option><option value="pt">🇧🇷 Português</option><option value="it">🇮🇹 Italiano</option></select></nav></div></header>
-<main>
-<section class="hero"><div class="container hero-inner"><div class="badge"><span></span><span data-i18n="badge">YOUTUBE VIDEO CUTTER</span></div><h1><span data-i18n="hero1">Cut YouTube videos</span><br><em data-i18n="hero2">by link.</em></h1><p class="lead" id="lead">Paste a public YouTube link, choose start and end, then cut your clip.</p><form id="infoForm" class="url-form"><div class="url-box"><span class="link-icon">↗</span><input id="url" type="url" autocomplete="off" placeholder="Paste YouTube URL here..." required><button type="button" id="pasteBtn" class="paste-btn">📋 Dán</button><button type="submit" id="getBtn">Get video</button></div></form><div class="trust"><span data-static-i18n="trust1">✓ Accurate timeline</span><span data-static-i18n="trust2">✓ No watermark</span><span data-static-i18n="trust3">✓ MP4 & MP3</span><span data-static-i18n="trust4">✓ Mobile friendly</span></div><div id="message" class="message" role="status"></div>
-<section id="editor" class="editor hidden"><div class="video-card"><div class="preview"><img id="thumbnail" alt="Video thumbnail"><div class="preview-shade"></div><div class="play-badge">▶</div></div><div class="video-meta"><div><span class="eyebrow" data-i18n="videoFound">VIDEO FOUND</span><h2 id="videoTitle">YouTube video</h2><p id="channel"></p></div><div class="duration-pill" id="durationLabel">00:00</div></div></div><div class="controls"><div class="control-head"><div><span class="eyebrow" data-i18n="selectClip">SELECT CLIP</span><h3 data-i18n="chooseSection">Choose the section</h3></div><span class="limit" data-i18n="maxClip">Maximum 30 minutes</span></div><div class="timeline-wrap"><div class="timeline" id="timeline"><div class="track"></div><div class="selection" id="selection"><button type="button" class="handle left" id="leftHandle" aria-label="Move start"></button><button type="button" class="handle right" id="rightHandle" aria-label="Move end"></button></div></div><div class="timeline-labels"><span id="startTimeline">00:00</span><span id="endTimeline">00:00</span></div></div><div class="time-grid"><label><span data-i18n="start">Start</span><div class="time-input"><input id="start" inputmode="numeric" value="00:00"><div class="nudge"><button type="button" data-target="start" data-delta="-1">−1s</button><button type="button" data-target="start" data-delta="1">+1s</button></div></div></label><label><span data-i18n="end">End</span><div class="time-input"><input id="end" inputmode="numeric" value="00:30"><div class="nudge"><button type="button" data-target="end" data-delta="-1">−1s</button><button type="button" data-target="end" data-delta="1">+1s</button></div></label></div><div class="format-row"><div><span class="eyebrow" data-i18n="outputFormat">OUTPUT FORMAT</span><div class="format-options"><label class="format active"><input type="radio" name="format" value="mp4" checked><span>MP4</span><small data-i18n="video">Video</small></label><label class="format"><input type="radio" name="format" value="mp3"><span>MP3</span><small data-i18n="audio">Audio</small></label></div></div><div class="clip-info"><span data-i18n="clipLengthLabel">Clip length</span><strong id="clipLength">00:30</strong></div></div><button id="cutBtn" class="cut-btn" type="button">✂ Cut & download <span>→</span></button><div id="progressBox" class="progress-box hidden"><div class="progress-top"><span id="progressText">Processing your clip…</span><span id="progressStatus">WORKING</span></div><div class="progress-track"><div id="progressBar"></div></div></div><div id="downloadBox" class="download-box hidden"><div class="success-icon">✓</div><div><strong id="downloadTitle">Your clip is ready</strong><span id="downloadMeta"></span></div><a id="downloadBtn" class="download-btn" href="#" target="_blank" rel="noopener">Download</a></div></div></section>
-</div></section>
-<section id="how" class="section"><div class="container"><div class="section-kicker" data-i18n="howKicker">HOW IT WORKS</div><h2 data-i18n="howTitle">3 simple steps.</h2><div class="steps"><article><b>01</b><h3 data-i18n="step1Title">Paste</h3><p data-i18n="step1Text">Paste a public YouTube link.</p></article><article><b>02</b><h3 data-i18n="step2Title">Select</h3><p data-i18n="step2Text">Choose the start and end time.</p></article><article><b>03</b><h3 data-i18n="step3Title">Cut</h3><p data-i18n="step3Text">Choose MP4 or MP3 and download.</p></article></div></div></section>
-<section id="about" class="section about-section"><div class="container"><div class="section-kicker" data-i18n="aboutKicker">ABOUT TAINHACMP3</div><h2 data-i18n="aboutTitle">Built by Minh Dev.</h2><p class="about-copy" data-i18n="aboutText">A simple and fast tool for cutting public YouTube videos.</p><div class="founder-card"><div class="founder-avatar">MD</div><div><strong>Minh Dev</strong><span data-i18n="founderRole">Founder & developer</span></div></div></div></section>
-<section id="faq" class="section faq-section"><div class="container"><div class="section-kicker" data-i18n="faqKicker">FAQ</div><h2 data-i18n="faqTitle">Good to know.</h2><div class="faq"><details><summary data-i18n="faq1Q">How long can a clip be?</summary><p data-i18n="faq1A">Up to 30 minutes per clip.</p></details><details><summary data-i18n="faq2Q">Which formats are available?</summary><p data-i18n="faq2A">MP4 and MP3.</p></details><details><summary data-i18n="faq3Q">Do I need to install anything?</summary><p data-i18n="faq3A">No. Processing is done on the server.</p></details><details><summary data-i18n="faq4Q">Can I cut private videos?</summary><p data-i18n="faq4A">No. Use only public content you are authorized to process.</p></details></div></div></section>
-</main><footer><div class="container footer-inner"><span>© 2026 TaiNhacMP3 · <span data-i18n="footerFounder">Founded by Minh Dev</span></span><span data-i18n="footerLegal">Use only content you are authorized to download or process.</span></div></footer><script>window.DEFAULT_LANG="<?= htmlspecialchars($lang) ?>";</script><script src="assets/app.js?v=4"></script><script src="assets/site-i18n.js?v=1"></script><script>
-(() => { const b=document.getElementById('pasteBtn'), i=document.getElementById('url'); if(!b||!i)return; b.addEventListener('click',async()=>{try{const t=await navigator.clipboard.readText();if(t){i.value=t;i.dispatchEvent(new Event('input',{bubbles:true}));i.focus();b.textContent='✓ Đã dán';setTimeout(()=>b.textContent='📋 Dán',1200)}else{i.focus()}}catch(e){i.focus();document.execCommand('paste')}}); })();
-</script>
-</body></html>
+  <div class="bg-orb orb-one"></div><div class="bg-orb orb-two"></div>
+  <header class="topbar">
+    <div class="container nav">
+      <a class="brand" href="/" aria-label="TaiNhacMP3 trang chủ"><span class="brand-icon">♪</span><span>TaiNhac<span>MP3</span></span></a>
+      <div class="nav-right"><span class="quality-pill">MP3 · 128 KBPS</span><a href="#how">Hướng dẫn</a><a href="#faq">FAQ</a></div>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="container hero-inner">
+        <div class="eyebrow"><i></i> TRÌNH TẢI NHẠC TRỰC TUYẾN</div>
+        <h1>Tải nhạc <span>MP3 128kbps</span><br>nhanh và đơn giản.</h1>
+        <p class="hero-copy">Dán liên kết bài hát từ Zing MP3, lấy thông tin bài hát và tải phiên bản 128kbps khi nguồn cung cấp URL hợp lệ.</p>
+
+        <form id="songForm" class="search-card" autocomplete="off">
+          <div class="input-wrap">
+            <span class="input-icon">↗</span>
+            <input id="songUrl" type="url" inputmode="url" placeholder="Dán link bài hát Zing MP3..." aria-label="Link bài hát Zing MP3" required>
+            <button id="pasteBtn" type="button" class="paste-btn">Dán</button>
+          </div>
+          <button id="getBtn" class="primary-btn" type="submit"><span>♪</span> LẤY LINK 128K</button>
+        </form>
+        <div id="message" class="message" role="status" aria-live="polite"></div>
+
+        <div class="feature-row">
+          <div><b>128 kbps</b><small>Chất lượng MP3</small></div>
+          <div><b>1 liên kết</b><small>Dán và xử lý</small></div>
+          <div><b>Không cài đặt</b><small>Chạy trên trình duyệt</small></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="resultSection" class="result-section hidden">
+      <div class="container">
+        <div class="result-card">
+          <div class="cover-wrap"><img id="cover" src="" alt="Ảnh bìa bài hát"><div class="cover-glow"></div></div>
+          <div class="song-info">
+            <div class="result-label">BÀI HÁT</div>
+            <h2 id="songTitle">Tên bài hát</h2>
+            <p id="songArtist">Nghệ sĩ</p>
+            <div class="result-meta"><span>MP3</span><span>128 kbps</span></div>
+            <div class="player-wrap"><audio id="player" controls preload="none"></audio></div>
+            <a id="downloadBtn" class="download-btn" href="#" target="_blank" rel="noopener"><span>↓</span> TẢI MP3 128 KBPS</a>
+            <p class="signed-note">Liên kết media có thể có thời hạn và được cấp theo phiên truy cập.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="how" class="section">
+      <div class="container">
+        <div class="section-head"><div class="eyebrow">CÁCH SỬ DỤNG</div><h2>Ba bước là xong.</h2></div>
+        <div class="steps">
+          <article><span>01</span><div><h3>Dán liên kết</h3><p>Sao chép URL của bài hát bạn được phép sử dụng và dán vào ô phía trên.</p></div></article>
+          <article><span>02</span><div><h3>Lấy link</h3><p>Máy chủ kiểm tra liên kết và lấy thông tin phiên bản 128kbps nếu có.</p></div></article>
+          <article><span>03</span><div><h3>Nghe hoặc tải</h3><p>Nghe thử trực tiếp hoặc mở liên kết tải MP3 128kbps.</p></div></article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section dark-section">
+      <div class="container split">
+        <div><div class="eyebrow">128 KBPS</div><h2>Tập trung vào một định dạng.</h2></div>
+        <p>Giao diện này được tối ưu riêng cho MP3 128kbps: ít nút, ít thao tác và hiển thị rõ thông tin bài hát trước khi tải.</p>
+      </div>
+    </section>
+
+    <section id="faq" class="section faq-section">
+      <div class="container narrow">
+        <div class="section-head"><div class="eyebrow">FAQ</div><h2>Thông tin cần biết.</h2></div>
+        <div class="faq">
+          <details open><summary>Hỗ trợ chất lượng nào?</summary><p>Giao diện chỉ dành cho MP3 128kbps. Các chất lượng cao hơn không được xử lý.</p></details>
+          <details><summary>Có cần cài phần mềm không?</summary><p>Không. Công cụ hoạt động trực tiếp trên trình duyệt.</p></details>
+          <details><summary>Liên kết tải có cố định không?</summary><p>Không nhất thiết. URL media có thể là liên kết có chữ ký và thời hạn.</p></details>
+          <details><summary>Có thể tải mọi bài hát không?</summary><p>Chỉ sử dụng nội dung và liên kết mà bạn có quyền truy cập, tải xuống hoặc xử lý. Công cụ không vượt qua VIP, DRM hoặc cơ chế bảo vệ truy cập.</p></details>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer><div class="container footer-inner"><div><strong>TaiNhacMP3</strong><span>MP3 128kbps Downloader</span></div><p>© 2026 · Built by Minh Dev · Chỉ sử dụng nội dung bạn có quyền sử dụng.</p></div></footer>
+  <script src="assets/app.js?v=6"></script>
+</body>
+</html>
