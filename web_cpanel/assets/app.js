@@ -1,34 +1,109 @@
-const API_BASE="https://api.tainhacmp3.online";
-const base={navHow:"How it works",navFaq:"FAQ",badge:"YOUTUBE VIDEO CUTTER",hero1:"Cut YouTube videos",hero2:"by link.",lead:"Paste a public YouTube link, choose the exact start and end, then create your clip.",placeholder:"Paste YouTube URL here...",get:"Get video",cut:"Cut video",loading:"Loading video information…",processing:"Processing your clip…",ready:"Your clip is ready",download:"Download",error:"Error: ",videoFound:"VIDEO FOUND",selectClip:"SELECT CLIP",chooseSection:"Choose the section you want",maxClip:"Maximum 30 minutes",start:"Start",end:"End",outputFormat:"OUTPUT FORMAT",video:"Video",audio:"Audio",clipLengthLabel:"Clip length",working:"WORKING",done:"DONE",trust1:"✓ No software required",trust2:"✓ MP4 & MP3",trust3:"✓ Up to 30 min per clip",howKicker:"HOW IT WORKS",howTitle:"Three simple steps.",step1Title:"Paste",step1Text:"Paste a public YouTube video URL into the box above.",step2Title:"Select",step2Text:"Set the exact start and end time of the section you need.",step3Title:"Cut & download",step3Text:"Choose MP4 or MP3 and let the server create your clip.",aboutKicker:"ABOUT TAINHACMP3",aboutTitle:"Built by Minh Dev.",aboutText:"TaiNhacMP3 was founded and developed by Minh Dev as a simple, fast browser-based tool for cutting public YouTube videos.",founderRole:"Founder & developer of TaiNhacMP3",faqKicker:"FAQ",faqTitle:"Good to know.",faq1Q:"How long can a clip be?",faq1A:"Each generated clip is limited to 30 minutes. Source videos can be up to 4 hours.",faq2Q:"Which formats are available?",faq2A:"MP4 for video and MP3 for audio.",faq3Q:"Do I need to install anything?",faq3A:"No. Processing happens on the TaiNhacMP3 server.",faq4Q:"Can I cut private or protected videos?",faq4A:"No. Use only public content that you are authorized to download or process.",footerFounder:"Founded by Minh Dev",footerLegal:"Use only content you are authorized to download or process.",badDuration:"Could not determine video duration",endGreater:"End time must be greater than start time",max30:"A clip can be at most 30 minutes long",cutFailed:"Could not cut the video",timeout:"Processing timed out",youtubeBlocked:"YouTube is refusing the server request. Try another public video."};
-const T={
-vi:{navHow:"Cách sử dụng",badge:"TRÌNH CẮT VIDEO YOUTUBE",hero1:"Cắt video YouTube",hero2:"bằng link.",lead:"Dán link YouTube công khai, chọn chính xác thời gian bắt đầu và kết thúc, rồi tạo đoạn video của bạn.",placeholder:"Dán link YouTube tại đây...",get:"Lấy video",cut:"Cắt video",loading:"Đang lấy thông tin video…",processing:"Đang xử lý đoạn video…",ready:"Đoạn video đã sẵn sàng",download:"Tải xuống",error:"Lỗi: ",videoFound:"VIDEO ĐƯỢC TÌM THẤY",selectClip:"CHỌN ĐOẠN CẮT",chooseSection:"Chọn đoạn video bạn muốn",maxClip:"Tối đa 30 phút",start:"Bắt đầu",end:"Kết thúc",outputFormat:"ĐỊNH DẠNG ĐẦU RA",video:"Video",audio:"Âm thanh",clipLengthLabel:"Độ dài đoạn cắt",working:"ĐANG XỬ LÝ",trust1:"✓ Không cần cài phần mềm",trust2:"✓ MP4 & MP3",trust3:"✓ Tối đa 30 phút mỗi đoạn",howKicker:"CÁCH SỬ DỤNG",howTitle:"3 bước đơn giản.",step1Title:"Dán link",step1Text:"Dán link video YouTube công khai vào ô phía trên.",step2Title:"Chọn thời gian",step2Text:"Chọn thời điểm bắt đầu và kết thúc chính xác của đoạn cần cắt.",step3Title:"Cắt & tải xuống",step3Text:"Chọn MP4 hoặc MP3 rồi để máy chủ tạo đoạn cắt cho bạn.",aboutKicker:"VỀ TAINHACMP3",aboutTitle:"Được xây dựng bởi Minh Dev.",aboutText:"TaiNhacMP3 được sáng lập và phát triển bởi Minh Dev, hướng tới một công cụ cắt video YouTube đơn giản, nhanh và dễ sử dụng trực tiếp trên trình duyệt.",founderRole:"Nhà sáng lập & phát triển TaiNhacMP3",faqTitle:"Thông tin cần biết.",faq1Q:"Một đoạn cắt dài tối đa bao lâu?",faq1A:"Mỗi đoạn được tạo có giới hạn 30 phút. Video nguồn có thể dài tối đa 4 giờ.",faq2Q:"Có những định dạng nào?",faq2A:"MP4 dành cho video và MP3 dành cho âm thanh.",faq3Q:"Có cần cài phần mềm không?",faq3A:"Không. Việc xử lý được thực hiện trên máy chủ TaiNhacMP3.",faq4Q:"Có thể cắt video riêng tư hoặc được bảo vệ không?",faq4A:"Không. Chỉ sử dụng nội dung công khai mà bạn có quyền tải xuống hoặc xử lý.",footerFounder:"Sáng lập bởi Minh Dev",footerLegal:"Chỉ sử dụng nội dung bạn có quyền tải xuống hoặc xử lý.",badDuration:"Không thể xác định thời lượng video",endGreater:"Thời gian kết thúc phải lớn hơn thời gian bắt đầu",max30:"Một đoạn cắt tối đa 30 phút",cutFailed:"Không thể cắt video",timeout:"Xử lý quá thời gian cho phép",youtubeBlocked:"YouTube đang từ chối yêu cầu từ máy chủ. Hãy thử video công khai khác."},
-fr:{navHow:"Utilisation",badge:"DÉCOUPEUR YOUTUBE",hero1:"Découpez des vidéos YouTube",hero2:"par lien.",lead:"Collez un lien YouTube public, choisissez le début et la fin, puis créez votre extrait.",placeholder:"Collez le lien YouTube ici...",get:"Charger",cut:"Découper",loading:"Chargement des informations…",processing:"Traitement de l'extrait…",ready:"Votre extrait est prêt",download:"Télécharger",error:"Erreur : ",videoFound:"VIDÉO TROUVÉE",selectClip:"CHOISIR L'EXTRAIT",chooseSection:"Choisissez la section souhaitée",maxClip:"30 minutes maximum",start:"Début",end:"Fin",outputFormat:"FORMAT DE SORTIE",video:"Vidéo",audio:"Audio",clipLengthLabel:"Durée de l'extrait",working:"TRAITEMENT",howKicker:"UTILISATION",howTitle:"Trois étapes simples.",step1Title:"Coller",step1Text:"Collez un lien public YouTube dans la zone ci-dessus.",step2Title:"Sélectionner",step2Text:"Définissez précisément le début et la fin de l'extrait.",step3Title:"Découper et télécharger",step3Text:"Choisissez MP4 ou MP3 et laissez le serveur créer votre extrait.",aboutTitle:"Créé par Minh Dev.",founderRole:"Fondateur et développeur de TaiNhacMP3",faqTitle:"À savoir."},
-de:{navHow:"So funktioniert es",badge:"YOUTUBE VIDEO CUTTER",hero1:"YouTube-Videos schneiden",hero2:"per Link.",lead:"Füge einen öffentlichen YouTube-Link ein, wähle Start und Ende und erstelle deinen Clip.",placeholder:"YouTube-Link hier einfügen...",get:"Video laden",cut:"Clip schneiden",loading:"Videoinformationen werden geladen…",processing:"Clip wird verarbeitet…",ready:"Dein Clip ist fertig",download:"Herunterladen",error:"Fehler: ",videoFound:"VIDEO GEFUNDEN",selectClip:"CLIP AUSWÄHLEN",chooseSection:"Gewünschten Abschnitt auswählen",maxClip:"Maximal 30 Minuten",start:"Start",end:"Ende",outputFormat:"AUSGABEFORMAT",video:"Video",audio:"Audio",clipLengthLabel:"Clip-Länge",working:"IN ARBEIT",howKicker:"SO FUNKTIONIERT ES",howTitle:"Drei einfache Schritte.",step1Title:"Einfügen",step2Title:"Auswählen",step3Title:"Schneiden & herunterladen",aboutTitle:"Entwickelt von Minh Dev.",founderRole:"Gründer & Entwickler von TaiNhacMP3",faqTitle:"Gut zu wissen."},
-es:{navHow:"Cómo funciona",badge:"CORTADOR DE YOUTUBE",hero1:"Corta vídeos de YouTube",hero2:"por enlace.",lead:"Pega un enlace público de YouTube, elige el inicio y el final y crea tu clip.",placeholder:"Pega el enlace de YouTube aquí...",get:"Cargar vídeo",cut:"Cortar vídeo",loading:"Cargando información del vídeo…",processing:"Procesando tu clip…",ready:"Tu clip está listo",download:"Descargar",error:"Error: ",videoFound:"VÍDEO ENCONTRADO",selectClip:"SELECCIONAR CLIP",chooseSection:"Elige la sección que necesitas",maxClip:"Máximo 30 minutos",start:"Inicio",end:"Fin",outputFormat:"FORMATO DE SALIDA",video:"Vídeo",audio:"Audio",clipLengthLabel:"Duración del clip",working:"PROCESANDO",howKicker:"CÓMO FUNCIONA",howTitle:"Tres pasos sencillos.",step1Title:"Pegar",step2Title:"Seleccionar",step3Title:"Cortar y descargar",aboutTitle:"Creado por Minh Dev.",founderRole:"Fundador y desarrollador de TaiNhacMP3",faqTitle:"Información útil."},
-id:{navHow:"Cara menggunakan",badge:"PEMOTONG VIDEO YOUTUBE",hero1:"Potong video YouTube",hero2:"dengan link.",lead:"Tempel tautan YouTube publik, pilih waktu mulai dan selesai, lalu buat klip.",placeholder:"Tempel link YouTube di sini...",get:"Ambil video",cut:"Potong video",loading:"Memuat informasi video…",processing:"Memproses klip…",ready:"Klip siap",download:"Unduh",error:"Kesalahan: ",videoFound:"VIDEO DITEMUKAN",selectClip:"PILIH KLIP",chooseSection:"Pilih bagian yang diinginkan",maxClip:"Maksimal 30 menit",start:"Mulai",end:"Selesai",outputFormat:"FORMAT OUTPUT",video:"Video",audio:"Audio",clipLengthLabel:"Durasi klip",working:"MEMPROSES",howKicker:"CARA MENGGUNAKAN",howTitle:"Tiga langkah sederhana.",step1Title:"Tempel",step2Title:"Pilih",step3Title:"Potong & unduh",aboutTitle:"Dibuat oleh Minh Dev.",founderRole:"Pendiri & pengembang TaiNhacMP3",faqTitle:"Perlu diketahui."},
-th:{navHow:"วิธีใช้งาน",badge:"เครื่องมือตัดวิดีโอ YOUTUBE",hero1:"ตัดวิดีโอ YouTube",hero2:"ด้วยลิงก์",lead:"วางลิงก์ YouTube สาธารณะ เลือกเวลาเริ่มและสิ้นสุด แล้วสร้างคลิป",placeholder:"วางลิงก์ YouTube ที่นี่...",get:"โหลดวิดีโอ",cut:"ตัดวิดีโอ",loading:"กำลังโหลดข้อมูลวิดีโอ…",processing:"กำลังประมวลผลคลิป…",ready:"คลิปพร้อมแล้ว",download:"ดาวน์โหลด",error:"ข้อผิดพลาด: ",videoFound:"พบวิดีโอแล้ว",selectClip:"เลือกคลิป",chooseSection:"เลือกช่วงที่ต้องการ",maxClip:"สูงสุด 30 นาที",start:"เริ่ม",end:"สิ้นสุด",outputFormat:"รูปแบบไฟล์",video:"วิดีโอ",audio:"เสียง",clipLengthLabel:"ความยาวคลิป",working:"กำลังประมวลผล",howKicker:"วิธีใช้งาน",howTitle:"3 ขั้นตอนง่ายๆ",step1Title:"วางลิงก์",step2Title:"เลือก",step3Title:"ตัดและดาวน์โหลด",aboutTitle:"สร้างโดย Minh Dev",founderRole:"ผู้ก่อตั้งและนักพัฒนา TaiNhacMP3",faqTitle:"ข้อมูลที่ควรรู้"},
-ja:{navHow:"使い方",badge:"YOUTUBE 動画カッター",hero1:"YouTube動画を",hero2:"リンクで切り抜く。",lead:"公開YouTubeリンクを貼り、開始と終了時間を選んでクリップを作成します。",placeholder:"YouTube URLを貼り付け...",get:"動画を取得",cut:"動画を切り抜く",loading:"動画情報を読み込み中…",processing:"クリップを処理中…",ready:"クリップの準備ができました",download:"ダウンロード",error:"エラー: ",videoFound:"動画が見つかりました",selectClip:"クリップを選択",chooseSection:"必要な部分を選択",maxClip:"最大30分",start:"開始",end:"終了",outputFormat:"出力形式",video:"動画",audio:"音声",clipLengthLabel:"クリップの長さ",working:"処理中",howKicker:"使い方",howTitle:"3つの簡単な手順",step1Title:"貼り付け",step2Title:"選択",step3Title:"切り抜き＆ダウンロード",aboutTitle:"Minh Devが開発",founderRole:"TaiNhacMP3の創設者・開発者",faqTitle:"知っておきたいこと"},
-ko:{navHow:"사용 방법",badge:"YOUTUBE VIDEO CUTTER",hero1:"YouTube 동영상을",hero2:"링크로 자르세요.",lead:"공개 YouTube 링크를 붙여넣고 시작 및 종료 시간을 선택해 클립을 만드세요.",placeholder:"YouTube URL을 붙여넣으세요...",get:"영상 가져오기",cut:"영상 자르기",loading:"영상 정보를 불러오는 중…",processing:"클립을 처리하는 중…",ready:"클립이 준비되었습니다",download:"다운로드",error:"오류: ",videoFound:"영상 확인",selectClip:"클립 선택",chooseSection:"원하는 구간을 선택하세요",maxClip:"최대 30분",start:"시작",end:"종료",outputFormat:"출력 형식",video:"영상",audio:"오디오",clipLengthLabel:"클립 길이",working:"처리 중",howKicker:"사용 방법",howTitle:"간단한 3단계",step1Title:"붙여넣기",step2Title:"선택",step3Title:"자르기 및 다운로드",aboutTitle:"Minh Dev가 개발",founderRole:"TaiNhacMP3 창립자 및 개발자",faqTitle:"알아두면 좋은 정보"},
-pt:{navHow:"Como funciona",badge:"CORTADOR DE VÍDEOS YOUTUBE",hero1:"Corte vídeos do YouTube",hero2:"por link.",lead:"Cole um link público do YouTube, escolha início e fim e crie seu clipe.",placeholder:"Cole o link do YouTube...",get:"Obter vídeo",cut:"Cortar vídeo",loading:"Carregando informações…",processing:"Processando o clipe…",ready:"Seu clipe está pronto",download:"Baixar",error:"Erro: ",videoFound:"VÍDEO ENCONTRADO",selectClip:"SELECIONAR CLIPE",chooseSection:"Escolha o trecho desejado",maxClip:"Máximo de 30 minutos",start:"Início",end:"Fim",outputFormat:"FORMATO DE SAÍDA",video:"Vídeo",audio:"Áudio",clipLengthLabel:"Duração do clipe",working:"PROCESSANDO",howKicker:"COMO FUNCIONA",howTitle:"Três passos simples.",step1Title:"Colar",step2Title:"Selecionar",step3Title:"Cortar e baixar",aboutTitle:"Criado por Minh Dev.",founderRole:"Fundador e desenvolvedor do TaiNhacMP3",faqTitle:"Bom saber."},
-it:{navHow:"Come funziona",badge:"YOUTUBE VIDEO CUTTER",hero1:"Taglia video YouTube",hero2:"tramite link.",lead:"Incolla un link YouTube pubblico, scegli inizio e fine e crea il tuo clip.",placeholder:"Incolla il link YouTube...",get:"Carica video",cut:"Taglia video",loading:"Caricamento delle informazioni…",processing:"Elaborazione del clip…",ready:"Il clip è pronto",download:"Scarica",error:"Errore: ",videoFound:"VIDEO TROVATO",selectClip:"SELEZIONA CLIP",chooseSection:"Scegli la sezione desiderata",maxClip:"Massimo 30 minuti",start:"Inizio",end:"Fine",outputFormat:"FORMATO DI USCITA",video:"Video",audio:"Audio",clipLengthLabel:"Durata del clip",working:"ELABORAZIONE",howKicker:"COME FUNZIONA",howTitle:"Tre semplici passaggi.",step1Title:"Incolla",step2Title:"Seleziona",step3Title:"Taglia e scarica",aboutTitle:"Creato da Minh Dev.",founderRole:"Fondatore e sviluppatore di TaiNhacMP3",faqTitle:"Da sapere."}
-};
-let lang=localStorage.getItem("tnmp3_lang")||window.DEFAULT_LANG||"en";
-const $=s=>document.querySelector(s),$$=s=>document.querySelectorAll(s),tr=()=>Object.assign({},base,T[lang]||{});
-const fmt=s=>{s=Math.max(0,Math.round(Number(s)||0));const h=Math.floor(s/3600),m=Math.floor((s%3600)/60),x=s%60;return h?`${String(h).padStart(2,"0")}:${String(m).padStart(2,"0")}:${String(x).padStart(2,"0")}`:`${String(m).padStart(2,"0")}:${String(x).padStart(2,"0")}`};
-const parseTime=v=>{v=String(v||"").trim();if(/^\d+$/.test(v))return +v;const p=v.split(":").map(Number);if(p.some(Number.isNaN)||p.length>3)return NaN;return p.length===3?p[0]*3600+p[1]*60+p[2]:p.length===2?p[0]*60+p[1]:p[0]};
-let duration=0,startSec=0,endSec=30,drag=null;
-function applyLang(){const x=tr();document.documentElement.lang=lang;$$('[data-i18n]').forEach(el=>{const k=el.dataset.i18n;if(x[k]!==undefined)el.textContent=x[k]});$("#lead").textContent=x.lead;$("#url").placeholder=x.placeholder;$("#getBtn").textContent=x.get;$("#cutBtn").firstChild.textContent=x.cut+" ";$("#progressText").textContent=x.processing;$("#progressStatus").textContent=x.working;document.title=lang==="vi"?"TaiNhacMP3 – Trình cắt video YouTube bằng link miễn phí | Minh Dev":"TaiNhacMP3 – YouTube Video Cutter by Link | Minh Dev"}
-$("#language").value=T[lang]?lang:"en";$("#language").onchange=()=>{lang=$("#language").value;localStorage.setItem("tnmp3_lang",lang);applyLang()};applyLang();
-function message(text,error=false){$("#message").textContent=text;$("#message").className="message"+(error?" error":"")}
-function setTimes(){startSec=Math.max(0,Math.min(startSec,duration));endSec=Math.max(startSec+1,Math.min(endSec,duration));$("#start").value=fmt(startSec);$("#end").value=fmt(endSec);$("#startTimeline").textContent=fmt(startSec);$("#endTimeline").textContent=fmt(endSec);$("#clipLength").textContent=fmt(endSec-startSec);updateSelection()}
-function updateSelection(){if(!duration)return;const l=startSec/duration*100,r=endSec/duration*100;$("#selection").style.left=l+"%";$("#selection").style.width=Math.max(0,r-l)+"%"}
-function showError(e){message(tr().error+(e?.message||e),true)}
-function apiError(j){throw new Error(j.detail||j.error||"Request failed")}
-$("#infoForm").onsubmit=async e=>{e.preventDefault();const url=$("#url").value.trim();if(!url)return;$("#getBtn").disabled=true;$("#editor").classList.add("hidden");$("#progressBox").classList.add("hidden");$("#downloadBox").classList.add("hidden");message(tr().loading);try{const r=await fetch(API_BASE+"/api/info",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({url})});const j=await r.json();if(!r.ok)apiError(j);duration=Number(j.duration);if(!duration)throw new Error(tr().badDuration);$("#thumbnail").src=j.thumbnail||"";$("#videoTitle").textContent=j.title||"YouTube video";$("#channel").textContent=j.channel||"";$("#durationLabel").textContent=fmt(duration);startSec=0;endSec=Math.min(30,duration);setTimes();$("#editor").classList.remove("hidden");message("");$("#editor").scrollIntoView({behavior:"smooth",block:"start"})}catch(err){showError(err)}finally{$("#getBtn").disabled=false}};
-$$('.nudge button').forEach(b=>b.onclick=()=>{const id=b.dataset.target,delta=+b.dataset.delta;let v=parseTime($("#"+id).value);if(Number.isNaN(v))v=id==="start"?startSec:endSec;v=Math.max(0,Math.min(duration,v+delta));if(id==="start")startSec=v;else endSec=v;setTimes()});
-$("#start").onchange=()=>{const v=parseTime($("#start").value);if(Number.isNaN(v))return setTimes();startSec=v;setTimes()};$("#end").onchange=()=>{const v=parseTime($("#end").value);if(Number.isNaN(v))return setTimes();endSec=v;setTimes()};
-$$('input[name="format"]').forEach(x=>x.onchange=()=>$$('.format').forEach(f=>f.classList.toggle('active',f.querySelector('input').checked)));
-function pointToTime(clientX){const r=$("#timeline").getBoundingClientRect();return Math.max(0,Math.min(duration,(clientX-r.left)/r.width*duration))}
-$("#timeline").onpointerdown=e=>{if(e.target.classList.contains("handle"))return;const t=pointToTime(e.clientX);if(Math.abs(t-startSec)<Math.abs(t-endSec))startSec=Math.min(t,endSec-1);else endSec=Math.max(t,startSec+1);setTimes()};
-["leftHandle","rightHandle"].forEach(id=>$("#"+id).onpointerdown=e=>{drag=id;e.preventDefault();e.stopPropagation()});window.onpointermove=e=>{if(!drag)return;const t=pointToTime(e.clientX);if(drag==="leftHandle")startSec=Math.min(Math.max(0,t),endSec-1);else endSec=Math.max(Math.min(duration,t),startSec+1);setTimes()};window.onpointerup=()=>drag=null;
-$("#cutBtn").onclick=async()=>{const format=document.querySelector('input[name="format"]:checked').value;if(endSec<=startSec){showError(tr().endGreater);return}if(endSec-startSec>1800){showError(tr().max30);return}$("#cutBtn").disabled=true;$("#downloadBox").classList.add("hidden");$("#progressBox").classList.remove("hidden");$("#progressBar").style.width="8%";$("#progressText").textContent=tr().processing;$("#progressStatus").textContent=tr().working;try{const r=await fetch(API_BASE+"/api/cut",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({url:$("#url").value.trim(),start:startSec,end:endSec,format})});const j=await r.json();if(!r.ok)apiError(j);for(let i=0;i<300;i++){await new Promise(x=>setTimeout(x,1500));const s=await fetch(API_BASE+"/api/status/"+j.job_id),x=await s.json();if(x.status==="done"){$("#progressBar").style.width="100%";$("#progressStatus").textContent=tr().done;$("#downloadTitle").textContent=tr().ready;$("#downloadMeta").textContent=`${format.toUpperCase()} • ${fmt(endSec-startSec)}`;$("#downloadBtn").href=API_BASE+x.download_url;$("#downloadBtn").textContent=tr().download;$("#downloadBox").classList.remove("hidden");return}if(x.status==="error")throw new Error(x.error||tr().cutFailed);$("#progressBar").style.width=Math.min(92,12+i*.35)+"%"}throw new Error(tr().timeout)}catch(err){showError(err)}finally{$("#cutBtn").disabled=false}};
+const API_BASE = "https://api.tainhacmp3.online";
+
+const form = document.getElementById("songForm");
+const urlInput = document.getElementById("songUrl");
+const pasteBtn = document.getElementById("pasteBtn");
+const getBtn = document.getElementById("getBtn");
+const message = document.getElementById("message");
+const resultSection = document.getElementById("resultSection");
+const cover = document.getElementById("cover");
+const songTitle = document.getElementById("songTitle");
+const songArtist = document.getElementById("songArtist");
+const player = document.getElementById("player");
+const downloadBtn = document.getElementById("downloadBtn");
+
+function setMessage(text = "", type = "") {
+  message.textContent = text;
+  message.className = `message ${type}`.trim();
+}
+
+function setLoading(loading) {
+  getBtn.disabled = loading;
+  getBtn.classList.toggle("loading", loading);
+  getBtn.innerHTML = loading ? '<span class="spinner"></span> ĐANG XỬ LÝ...' : '<span>♪</span> LẤY LINK 128K';
+}
+
+function normalizeResult(data) {
+  const root = data?.data ?? data ?? {};
+  const audio = root.audio ?? root;
+  return {
+    title: audio.title || root.title || "Bài hát",
+    artist: audio.artist || audio.singer || root.artist || root.singer || "Nghệ sĩ",
+    cover: audio.cover || root.thumbnail || root.thumbnailM || "",
+    url: audio["128"] || audio["128kbps"] || root["128"] || root["128kbps"] || root.url || ""
+  };
+}
+
+async function resolveSong(url) {
+  const response = await fetch(`${API_BASE}/api/zing/stream`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ url })
+  });
+
+  let data = null;
+  try { data = await response.json(); } catch (_) {}
+  if (!response.ok) {
+    throw new Error(data?.detail || data?.message || "Không thể lấy link bài hát.");
+  }
+  return normalizeResult(data);
+}
+
+function showResult(song) {
+  songTitle.textContent = song.title;
+  songArtist.textContent = song.artist;
+  cover.src = song.cover || "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='600' height='600' viewBox='0 0 600 600'%3E%3Crect width='600' height='600' fill='%2318181b'/%3E%3Ctext x='300' y='330' fill='%23a1a1aa' text-anchor='middle' font-size='110'%3E♪%3C/text%3E%3C/svg%3E";
+  cover.alt = song.title;
+  if (song.url) {
+    player.src = song.url;
+    downloadBtn.href = song.url;
+    downloadBtn.classList.remove("disabled");
+  } else {
+    player.removeAttribute("src");
+    downloadBtn.href = "#";
+    downloadBtn.classList.add("disabled");
+  }
+  resultSection.classList.remove("hidden");
+  resultSection.scrollIntoView({ behavior: "smooth", block: "center" });
+}
+
+form?.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  const url = urlInput.value.trim();
+  if (!url) return setMessage("Vui lòng dán link bài hát.", "error");
+  if (!/(zingmp3\.vn|zing\.mp3|zmp3\.vn)/i.test(url)) {
+    return setMessage("Vui lòng nhập một liên kết Zing MP3 hợp lệ.", "error");
+  }
+
+  setMessage("Đang lấy thông tin và link 128kbps...", "loading-message");
+  setLoading(true);
+  resultSection.classList.add("hidden");
+  try {
+    const song = await resolveSong(url);
+    if (!song.url) throw new Error("Nguồn không trả về link MP3 128kbps.");
+    showResult(song);
+    setMessage("Đã lấy link 128kbps.", "success");
+  } catch (error) {
+    console.error(error);
+    setMessage(error.message || "Không thể xử lý link này.", "error");
+  } finally {
+    setLoading(false);
+  }
+});
+
+pasteBtn?.addEventListener("click", async () => {
+  try {
+    const text = await navigator.clipboard.readText();
+    if (text) {
+      urlInput.value = text;
+      urlInput.focus();
+      setMessage("Đã dán liên kết.", "success");
+    }
+  } catch (_) {
+    urlInput.focus();
+  }
+});
+
+downloadBtn?.addEventListener("click", (event) => {
+  if (downloadBtn.classList.contains("disabled")) event.preventDefault();
+});
